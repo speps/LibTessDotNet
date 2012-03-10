@@ -27,7 +27,7 @@ Provide a robust and fast tessellator (polygons with N vertices in the output) f
 
 ### Screenshot
 
-![Redbook winding example](/speps/LibTessDotNet/TessBed/Misc/screenshot.png)
+![Redbook winding example](/speps/LibTessDotNet/raw/master/TessBed/Misc/screenshot.png)
 
 ### Comparison
 
