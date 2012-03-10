@@ -18,6 +18,7 @@ Provide a robust and fast tessellator (polygons with N vertices in the output) f
     - self-intersecting (see "star-intersect" sample)
     - with coincident vertices (see "clipper" sample)
     - advanced winding rules : even/odd, non zero, positive, negative, |winding| >= 2 (see "redbook-winding" sample)
+* Custom vertex attributes (eg. UV coordinates) with merging callback
 * Choice of output
     - polygons with N vertices (with N >= 3)
     - connected polygons (didn't quite tried this yet, but should work)
