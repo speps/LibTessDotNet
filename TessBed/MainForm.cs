@@ -69,7 +69,7 @@ namespace TessBed
                 RefreshAsset(toolStripAssets.SelectedIndex);
             };
 
-            SetAsset("star-intersect");
+            SetAsset("redbook-winding");
             SetShowInput(true);
             SetShowWinding(false);
             SetPolySize(3);

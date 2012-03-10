@@ -25,6 +25,10 @@ Provide a robust and fast tessellator (polygons with N vertices in the output) f
     - boundary only (to have a basic union of two contours)
 * Handles polygons computed with [Clipper](http://www.angusj.com/delphi/clipper.php) - an open source freeware polygon clipping library
 
+### Screenshot
+
+![Redbook winding example](/speps/LibTessDotNet/TessBed/Misc/screenshot.png)
+
 ### Comparison
 
 TBD
@@ -33,6 +37,7 @@ TBD
 
 * Better performance timing (eg. multiple loops instead of one)
 * Profile GC allocations
+* Comparison with Poly2Tri
 
 ### License
 
