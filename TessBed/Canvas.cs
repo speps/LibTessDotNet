@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+using LibTessDotNet;
 
 namespace TessBed
 {
@@ -15,6 +16,22 @@ namespace TessBed
         public Canvas()
         {
             SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
+        }
+
+        private float SignedArea(Polygon polygon)
+        {
+            float area = 0.0f;
+
+            for (int i = 0; i < polygon.Count; i++)
+            {
+                var v0 = polygon[i];
+                var v1 = polygon[(i + 1) % polygon.Count];
+
+                area += v0.X * v1.Y;
+                area -= v0.Y * v1.X;
+            }
+
+            return area * 0.5f;
         }
 
         protected override void OnPaint(PaintEventArgs pe)
@@ -60,10 +77,18 @@ namespace TessBed
                 {
                     foreach (var polygon in Input)
                     {
+                        bool reverse = false;
+                        if (polygon.Orientation != ContourOrientation.Original)
+                        {
+                            float area = SignedArea(polygon);
+                            reverse = (polygon.Orientation == ContourOrientation.Clockwise && area < 0.0f) || (polygon.Orientation == ContourOrientation.CounterClockwise && area > 0.0f);
+                        }
+
                         for (int i = 0; i < polygon.Count; i++)
                         {
-                            var p0 = f(polygon[i]);
-                            var p1 = f(polygon[(i + 1) % polygon.Count]);
+                            int index = reverse ? polygon.Count - 1 - i : i;
+                            var p0 = f(polygon[(index + (reverse ? 1 : 0)) % polygon.Count]);
+                            var p1 = f(polygon[(index + (reverse ? 0 : 1)) % polygon.Count]);
 
                             g.DrawLine(ShowWinding ? penWinding : penContour, p0, p1);
                             g.FillEllipse(brushPoint, p0.X - 2.0f, p0.Y - 2.0f, 4.0f, 4.0f);

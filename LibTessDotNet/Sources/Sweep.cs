@@ -360,7 +360,6 @@ namespace LibTessDotNet
         private void GetIntersectData(MeshUtils.Vertex isect, MeshUtils.Vertex orgUp, MeshUtils.Vertex dstUp, MeshUtils.Vertex orgLo, MeshUtils.Vertex dstLo)
         {
             isect._coords = Vec3.Zero;
-            isect._idx = MeshUtils.Undef;
             float w0, w1, w2, w3;
             VertexWeights(isect, orgUp, dstUp, out w0, out w1);
             VertexWeights(isect, orgLo, dstLo, out w2, out w3);

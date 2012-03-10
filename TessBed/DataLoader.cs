@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
+using LibTessDotNet;
 
 namespace TessBed
 {
@@ -15,6 +16,8 @@ namespace TessBed
 
     public class Polygon : List<PolygonPoint>
     {
+        public ContourOrientation Orientation = ContourOrientation.Original;
+
         public Polygon()
         {
 
@@ -46,8 +49,8 @@ namespace TessBed
             var polys = new PolygonSet();
             int lineNum = 0;
             string line;
-            bool skipLine = false;
             Color currentColor = Color.White;
+            ContourOrientation currentOrientation = ContourOrientation.Original;
             using (var stream = new StreamReader(fileStream))
             {
                 while ((line = stream.ReadLine()) != null)
@@ -58,7 +61,8 @@ namespace TessBed
                     {
                         if (points.Count > 0)
                         {
-                            var p = new Polygon(points);
+                            var p = new Polygon(points) { Orientation = currentOrientation };
+                            currentOrientation = ContourOrientation.Original;
                             polys.Add(p);
                             points.Clear();
                         }
@@ -70,20 +74,22 @@ namespace TessBed
                     {
                         continue;
                     }
-                    if (!skipLine && line.StartsWith("/*"))
+                    if (line.StartsWith("force", true, CultureInfo.InvariantCulture))
                     {
-                        skipLine = true;
-                        continue;
-                    }
-                    else if (skipLine)
-                    {
-                        if (line.StartsWith("*/"))
+                        var force = line.Split(new[] { ' ', ',', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+                        if (force.Length == 2)
                         {
-                            skipLine = false;
+                            if (string.Compare(force[1], "cw", true) == 0)
+                            {
+                                currentOrientation = ContourOrientation.Clockwise;
+                            }
+                            if (string.Compare(force[1], "ccw", true) == 0)
+                            {
+                                currentOrientation = ContourOrientation.CounterClockwise;
+                            }
                         }
-                        continue;
                     }
-                    if (line.StartsWith("color", true, CultureInfo.InvariantCulture))
+                    else if (line.StartsWith("color", true, CultureInfo.InvariantCulture))
                     {
                         var rgba = line.Split(new[] { ' ', ',', '\t' }, StringSplitOptions.RemoveEmptyEntries);
                         int r = 255, g = 255, b = 255, a = 255;
@@ -128,7 +134,7 @@ namespace TessBed
 
                 if (points.Count > 0)
                 {
-                    Polygon p = new Polygon(points);
+                    Polygon p = new Polygon(points) { Orientation = currentOrientation };
                     polys.Add(p);
                 }
             }

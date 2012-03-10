@@ -51,6 +51,13 @@ namespace LibTessDotNet
         BoundaryContours
     }
 
+    public enum ContourOrientation
+    {
+        Original,
+        Clockwise,
+        CounterClockwise
+    }
+
     public struct ContourVertex
     {
         public Vec3 Position;
@@ -75,10 +82,8 @@ namespace LibTessDotNet
         private MeshUtils.Vertex _event;
 
         private CombineCallback _combineCallback;
-        private int _vertexIndexCounter;
 
         private ContourVertex[] _vertices;
-        private int[] _vertexIndices;
         private int _vertexCount;
         private int[] _elements;
         private int _elementCount;
@@ -89,7 +94,6 @@ namespace LibTessDotNet
         public float SUnitY = 1.0f;
 
         public ContourVertex[] Vertices { get { return _vertices; } }
-        public int[] VertexIndices { get { return _vertexIndices; } }
         public int VertexCount { get { return _vertexCount; } }
 
         public int[] Elements { get { return _elements; } }
@@ -103,10 +107,7 @@ namespace LibTessDotNet
             _windingRule = WindingRule.EvenOdd;
             _mesh = null;
 
-            _vertexIndexCounter = 0;
-
             _vertices = null;
-            _vertexIndices = null;
             _vertexCount = 0;
             _elements = null;
             _elementCount = 0;
@@ -474,7 +475,6 @@ namespace LibTessDotNet
 
             _vertexCount = maxVertexCount;
             _vertices = new ContourVertex[_vertexCount];
-            _vertexIndices = new int[_vertexCount];
 
             // Output vertices.
             for (v = _mesh._vHead._next; v != _mesh._vHead; v = v._next)
@@ -485,8 +485,6 @@ namespace LibTessDotNet
                     int n = v._n;
                     _vertices[v._n].Position = v._coords;
                     _vertices[v._n].Data = v._data;
-                    // Store vertex index.
-                    _vertexIndices[v._n] = v._idx;
                 }
             }
 
@@ -556,11 +554,9 @@ namespace LibTessDotNet
 
             _elements = new int[_elementCount * 2];
             _vertices = new ContourVertex[_vertexCount];
-            _vertexIndices = new int[_vertexCount];
 
             int vertIndex = 0;
             int elementIndex = 0;
-            int vertIndsIndex = 0;
 
             startVert = 0;
 
@@ -570,15 +566,12 @@ namespace LibTessDotNet
 
                 vertCount = 0;
                 start = edge = f._anEdge;
-                do
-                {
+                do {
                     _vertices[vertIndex++].Position = edge._Org._coords;
                     _vertices[vertIndex++].Data = edge._Org._data;
-                    _vertexIndices[vertIndsIndex++] = edge._Org._idx;
                     ++vertCount;
                     edge = edge._Lnext;
-                }
-                while (edge != start);
+                } while (edge != start);
 
                 _elements[elementIndex++] = startVert;
                 _elements[elementIndex++] = vertCount;
@@ -587,11 +580,39 @@ namespace LibTessDotNet
             }
         }
 
+        private float SignedArea(ContourVertex[] vertices)
+        {
+            float area = 0.0f;
+
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                var v0 = vertices[i];
+                var v1 = vertices[(i + 1) % vertices.Length];
+
+                area += v0.Position.X * v1.Position.Y;
+                area -= v0.Position.Y * v1.Position.X;
+            }
+
+            return area * 0.5f;
+        }
+
         public void AddContour(ContourVertex[] vertices)
+        {
+            AddContour(vertices, ContourOrientation.Original);
+        }
+
+        public void AddContour(ContourVertex[] vertices, ContourOrientation forceOrientation)
         {
             if (_mesh == null)
             {
                 _mesh = new Mesh();
+            }
+
+            bool reverse = false;
+            if (forceOrientation != ContourOrientation.Original)
+            {
+                float area = SignedArea(vertices);
+                reverse = (forceOrientation == ContourOrientation.Clockwise && area < 0.0f) || (forceOrientation == ContourOrientation.CounterClockwise && area > 0.0f);
             }
 
             MeshUtils.Edge e = null;
@@ -610,12 +631,10 @@ namespace LibTessDotNet
                     e = e._Lnext;
                 }
 
+                int index = reverse ? vertices.Length - 1 - i : i;
                 // The new vertex is now e._Org.
-                e._Org._coords = vertices[i].Position;
-                e._Org._data = vertices[i].Data;
-
-                // Store the insertion number so that the vertex can be later recognized.
-                e._Org._idx = _vertexIndexCounter++;
+                e._Org._coords = vertices[index].Position;
+                e._Org._data = vertices[index].Data;
 
                 // The winding of an edge says how the winding number changes as we
                 // cross from the edge''s right face to its left face.  We add the
@@ -635,9 +654,6 @@ namespace LibTessDotNet
         {
             _vertices = null;
             _elements = null;
-            _vertexIndices = null;
-
-            _vertexIndexCounter = 0;
 
             _windingRule = windingRule;
             _combineCallback = combineCallback;

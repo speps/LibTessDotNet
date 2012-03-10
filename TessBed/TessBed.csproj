@@ -84,6 +84,7 @@
     <EmbeddedResource Include="Data\letterE.dat" />
     <EmbeddedResource Include="Data\star-intersect.dat" />
     <EmbeddedResource Include="Data\redbook-winding.dat" />
+    <EmbeddedResource Include="Data\force-winding.dat" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

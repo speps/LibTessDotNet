@@ -167,7 +167,7 @@ namespace TessBed
                     v[i].Data = poly[i].Color;
                 }
                 _sw.Start();
-                _tess.AddContour(v);
+                _tess.AddContour(v, poly.Orientation);
                 _sw.Stop();
             }
 

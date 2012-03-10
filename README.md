@@ -18,7 +18,9 @@ Provide a robust and fast tessellator (polygons with N vertices in the output) f
     - self-intersecting (see "star-intersect" sample)
     - with coincident vertices (see "clipper" sample)
     - advanced winding rules : even/odd, non zero, positive, negative, |winding| >= 2 (see "redbook-winding" sample)
-* Custom vertex attributes (eg. UV coordinates) with merging callback
+* Custom input
+    - Custom vertex attributes (eg. UV coordinates) with merging callback
+    - Force orientation of input contour (clockwise/counterclockwise, eg. for GIS systems, see "force-winding" sample)
 * Choice of output
     - polygons with N vertices (with N >= 3)
     - connected polygons (didn't quite tried this yet, but should work)
@@ -37,7 +39,7 @@ TBD
 
 * Better performance timing (eg. multiple loops instead of one)
 * Profile GC allocations
-* Comparison with Poly2Tri
+* Comparison with [Poly2Tri](http://code.google.com/p/poly2tri/)
 
 ### License
 
@@ -47,3 +49,6 @@ More information in LICENSE.txt.
 ### Links
 * [Reference implementation](http://oss.sgi.com/projects/ogl-sample) - the original SGI reference implementation
 * [libtess2](http://code.google.com/p/libtess2/) - Mikko Mononen cleaned up the original GLU tesselator
+* [Poly2Tri](http://code.google.com/p/poly2tri/) - another triangulation library for .NET (other ports also available)
+    - Does not support polygons from Clipper, more specifically vertices with same coordinates (coincident)
+* [Clipper](http://www.angusj.com/delphi/clipper.php) - an open source freeware polygon clipping library
