@@ -2,13 +2,24 @@ LibTessDotNet
 =============
 
 ### Requirements
-* .NET framework 2.0
-* C# 3.0 compiler if you want to compile
+* .NET framework 2.0 (pure CLR, should work with Mono and Unity)
+* C# 3.0 compiler if you want to compile (I am guilty of using 'var')
 * WinForms for the testbed (optional)
 
 ### Goal
 
-Provide a robust and fast tesselator (polygons with N vertices in the output) for .NET.
+Provide a robust and fast tessellator (polygons with N vertices in the output) for .NET, also does triangulation.
+
+### Features
+
+* Tessellate arbitrary complex polygons
+    - self-intersecting (see "star-intersect" sample)
+    - with coincident vertices (see "clipper" sample)
+* Choice of output
+    - polygons with N vertices (with N >= 3)
+    - connected polygons (didn't quite tried this yet, but should work)
+    - boundary only (to have a basic union of two contours)
+* Handles polygons computed with [Clipper](http://www.angusj.com/delphi/clipper.php) - an open source freeware polygon clipping library
 
 ### Comparison
 
