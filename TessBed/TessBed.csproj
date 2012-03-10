@@ -81,6 +81,7 @@
     <EmbeddedResource Include="Data\strange.dat" />
     <EmbeddedResource Include="Data\tank.dat" />
     <EmbeddedResource Include="Data\test.dat" />
+    <EmbeddedResource Include="Data\letterE.dat" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
