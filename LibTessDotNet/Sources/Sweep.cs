@@ -339,13 +339,13 @@ namespace LibTessDotNet
         /// splits the weight between its org and dst according to the
         /// relative distance to "isect".
         /// </summary>
-        private void VertexWeights(MeshUtils.Vertex isect, MeshUtils.Vertex org, MeshUtils.Vertex dst)
+        private void VertexWeights(MeshUtils.Vertex isect, MeshUtils.Vertex org, MeshUtils.Vertex dst, out float w0, out float w1)
         {
             var t1 = Geom.VertL1dist(org, isect);
             var t2 = Geom.VertL1dist(dst, isect);
 
-            var w0 = 0.5f * t2 / (t1 + t2);
-            var w1 = 0.5f * t1 / (t1 + t2);
+            w0 = 0.5f * t2 / (t1 + t2);
+            w1 = 0.5f * t1 / (t1 + t2);
 
             isect._coords.X += w0 * org._coords.X + w1 * dst._coords.X;
             isect._coords.Y += w0 * org._coords.Y + w1 * dst._coords.Y;
@@ -359,10 +359,20 @@ namespace LibTessDotNet
         /// </summary>
         private void GetIntersectData(MeshUtils.Vertex isect, MeshUtils.Vertex orgUp, MeshUtils.Vertex dstUp, MeshUtils.Vertex orgLo, MeshUtils.Vertex dstLo)
         {
-            isect._coords = MeshUtils.Vec3.Zero;
+            isect._coords = Vec3.Zero;
             isect._idx = MeshUtils.Undef;
-            VertexWeights(isect, orgUp, dstUp);
-            VertexWeights(isect, orgLo, dstLo);
+            float w0, w1, w2, w3;
+            VertexWeights(isect, orgUp, dstUp, out w0, out w1);
+            VertexWeights(isect, orgLo, dstLo, out w2, out w3);
+
+            if (_combineCallback != null)
+            {
+                isect._data = _combineCallback(
+                    isect._coords,
+                    new object[] { orgUp._data, dstUp._data, orgLo._data, dstLo._data },
+                    new float[] { w0, w1, w2, w3 }
+                );
+            }
         }
 
         /// <summary>

@@ -1,9 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows.Forms;
 using LibTessDotNet;
-using System.Drawing.Drawing2D;
 using System.Drawing;
-using System.Diagnostics;
 
 namespace TessBed
 {
@@ -28,6 +27,7 @@ namespace TessBed
             panel.Controls.Add(_canvas);
 
             _assets = _data.AssetNames;
+            Array.Sort(_assets);
             foreach (var asset in _assets)
             {
                 toolStripAssets.Items.Add(asset);
@@ -56,9 +56,24 @@ namespace TessBed
                 PolySizeEvent();
             };
 
-            SetAsset("clipper");
+            toolStripButtonShowInput.CheckedChanged += delegate(object sender, EventArgs e)
+            {
+                _canvas.ShowInput = toolStripButtonShowInput.Checked;
+                toolStripButtonShowWinding.Enabled = _canvas.ShowInput;
+                RefreshAsset(toolStripAssets.SelectedIndex);
+            };
+
+            toolStripButtonShowWinding.CheckedChanged += delegate(object sender, EventArgs e)
+            {
+                _canvas.ShowWinding = toolStripButtonShowWinding.Checked;
+                RefreshAsset(toolStripAssets.SelectedIndex);
+            };
+
+            SetAsset("star-intersect");
+            SetShowInput(true);
+            SetShowWinding(false);
             SetPolySize(3);
-            SetWindingRule(WindingRule.OddEven);
+            SetWindingRule(WindingRule.EvenOdd);
         }
 
         private void SetAsset(string name)
@@ -83,6 +98,16 @@ namespace TessBed
                     break;
                 }
             }
+        }
+
+        private void SetShowInput(bool show)
+        {
+            toolStripButtonShowInput.Checked = show;
+        }
+
+        private void SetShowWinding(bool show)
+        {
+            toolStripButtonShowWinding.Checked = show;
         }
 
         private void PolySizeEvent()
@@ -115,6 +140,18 @@ namespace TessBed
             RefreshAsset(_assets[index]);
         }
 
+        private object VertexCombine(Vec3 position, object[] data, float[] weights)
+        {
+            var colors = new Color[] { (Color)data[0], (Color)data[1], (Color)data[2], (Color)data[3] };
+            var rgba = new float[] {
+                colors[0].R * weights[0] + colors[1].R * weights[1] + colors[2].R * weights[2] + colors[3].R * weights[3],
+                colors[0].G * weights[0] + colors[1].G * weights[1] + colors[2].G * weights[2] + colors[3].G * weights[3],
+                colors[0].B * weights[0] + colors[1].B * weights[1] + colors[2].B * weights[2] + colors[3].B * weights[3],
+                colors[0].A * weights[0] + colors[1].A * weights[1] + colors[2].A * weights[2] + colors[3].A * weights[3]
+            };
+            return Color.FromArgb((int)rgba[3], (int)rgba[0], (int)rgba[1], (int)rgba[2]);
+        }
+
         private void RefreshAsset(string name)
         {
             var asset = _data.GetAsset(name);
@@ -123,19 +160,19 @@ namespace TessBed
 
             foreach (var poly in asset.Polygons)
             {
-                var v = new float[poly.Count * 2];
+                var v = new ContourVertex[poly.Count];
                 for (int i = 0; i < poly.Count; i++)
                 {
-                    v[i * 2 + 0] = poly[i].X;
-                    v[i * 2 + 1] = poly[i].Y;
+                    v[i].Position = new Vec3 { X = poly[i].X, Y = poly[i].Y };
+                    v[i].Data = poly[i].Color;
                 }
                 _sw.Start();
-                _tess.AddContour(2, v);
+                _tess.AddContour(v);
                 _sw.Stop();
             }
 
             _sw.Start();
-            _tess.Tesselate(_windingRule, ElementType.Polygons, _polySize, 2, null);
+            _tess.Tessellate(_windingRule, ElementType.Polygons, _polySize, VertexCombine);
             _sw.Stop();
 
             var output = new PolygonSet();
@@ -147,7 +184,11 @@ namespace TessBed
                     int index = _tess.Elements[i * _polySize + j];
                     if (index == -1)
                         continue;
-                    var v = new PolygonPoint { X = _tess.Vertices[index * 2 + 0], Y = _tess.Vertices[index * 2 + 1] };
+                    var v = new PolygonPoint {
+                        X = _tess.Vertices[index].Position.X,
+                        Y = _tess.Vertices[index].Position.Y,
+                        Color = (Color)_tess.Vertices[index].Data
+                    };
                     poly.Add(v);
                 }
                 output.Add(poly);

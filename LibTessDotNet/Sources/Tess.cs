@@ -37,7 +37,7 @@ namespace LibTessDotNet
 {
     public enum WindingRule
     {
-        OddEven,
+        EvenOdd,
         NonZero,
         Positive,
         Negative,
@@ -51,12 +51,20 @@ namespace LibTessDotNet
         BoundaryContours
     }
 
+    public struct ContourVertex
+    {
+        public Vec3 Position;
+        public object Data;
+    }
+
+    public delegate object CombineCallback(Vec3 position, object[] data, float[] weights);
+
     public partial class Tess
     {
         private Mesh _mesh;
-        private MeshUtils.Vec3 _normal;
-        private MeshUtils.Vec3 _sUnit;
-        private MeshUtils.Vec3 _tUnit;
+        private Vec3 _normal;
+        private Vec3 _sUnit;
+        private Vec3 _tUnit;
 
         private float _bminX, _bminY, _bmaxX, _bmaxY;
 
@@ -66,25 +74,33 @@ namespace LibTessDotNet
         private PriorityQueue<MeshUtils.Vertex> _pq;
         private MeshUtils.Vertex _event;
 
+        private CombineCallback _combineCallback;
         private int _vertexIndexCounter;
 
-        private float[] _vertices;
-        public float[] Vertices { get { return _vertices; } }
+        private ContourVertex[] _vertices;
         private int[] _vertexIndices;
-        public int[] VertexIndices { get { return _vertexIndices; } }
         private int _vertexCount;
-        public int VertexCount { get { return _vertexCount; } }
         private int[] _elements;
-        public int[] Elements { get { return _elements; } }
         private int _elementCount;
+
+        public Vec3 Normal { get { return _normal; } set { _normal = value; } }
+
+        public float SUnitX = 1.0f;
+        public float SUnitY = 1.0f;
+
+        public ContourVertex[] Vertices { get { return _vertices; } }
+        public int[] VertexIndices { get { return _vertexIndices; } }
+        public int VertexCount { get { return _vertexCount; } }
+
+        public int[] Elements { get { return _elements; } }
         public int ElementCount { get { return _elementCount; } }
 
         public Tess()
         {
-            _normal = MeshUtils.Vec3.Zero;
+            _normal = Vec3.Zero;
             _bminX = _bminY = _bmaxX = _bmaxY = 0.0f;
 
-            _windingRule = WindingRule.OddEven;
+            _windingRule = WindingRule.EvenOdd;
             _mesh = null;
 
             _vertexIndexCounter = 0;
@@ -96,7 +112,7 @@ namespace LibTessDotNet
             _elementCount = 0;
         }
 
-        private void ComputeNormal(ref MeshUtils.Vec3 norm)
+        private void ComputeNormal(ref Vec3 norm)
         {
             var v = _mesh._vHead._next;
 
@@ -123,7 +139,7 @@ namespace LibTessDotNet
             if (minVal[i] >= maxVal[i])
             {
                 // All vertices are the same -- normal doesn't matter
-                norm = new MeshUtils.Vec3 { X = 0.0f, Y = 0.0f, Z = 1.0f };
+                norm = new Vec3 { X = 0.0f, Y = 0.0f, Z = 1.0f };
                 return;
             }
 
@@ -132,11 +148,11 @@ namespace LibTessDotNet
             float maxLen2 = 0.0f, tLen2;
             var v1 = minVert[i];
             var v2 = maxVert[i];
-            MeshUtils.Vec3 d1, d2, tNorm;
-            MeshUtils.Vec3.Sub(ref v1._coords, ref v2._coords, out d1);
+            Vec3 d1, d2, tNorm;
+            Vec3.Sub(ref v1._coords, ref v2._coords, out d1);
             for (v = _mesh._vHead._next; v != _mesh._vHead; v = v._next)
             {
-                MeshUtils.Vec3.Sub(ref v._coords, ref v2._coords, out d2);
+                Vec3.Sub(ref v._coords, ref v2._coords, out d2);
                 tNorm.X = d1.Y * d2.Z - d1.Z * d2.Y;
                 tNorm.Y = d1.Z * d2.X - d1.X * d2.Z;
                 tNorm.Z = d1.X * d2.Y - d1.Y * d2.X;
@@ -151,8 +167,8 @@ namespace LibTessDotNet
             if (maxLen2 <= 0.0f)
             {
                 // All points lie on a single line -- any decent normal will do
-                norm = MeshUtils.Vec3.Zero;
-                i = MeshUtils.Vec3.LongAxis(ref d1);
+                norm = Vec3.Zero;
+                i = Vec3.LongAxis(ref d1);
                 norm[i] = 1.0f;
             }
         }
@@ -181,12 +197,9 @@ namespace LibTessDotNet
                 {
                     v._t = -v._t;
                 }
-                MeshUtils.Vec3.Neg(ref _tUnit);
+                Vec3.Neg(ref _tUnit);
             }
         }
-
-        public static float SUnitX = 1.0f;
-        public static float SUnitY = 1.0f;
 
         private void ProjectPolygon()
         {
@@ -199,7 +212,7 @@ namespace LibTessDotNet
                 computedNormal = true;
             }
 
-            int i = MeshUtils.Vec3.LongAxis(ref norm);
+            int i = Vec3.LongAxis(ref norm);
 
             _sUnit[i] = 0.0f;
             _sUnit[(i + 1) % 3] = SUnitX;
@@ -212,8 +225,8 @@ namespace LibTessDotNet
             // Project the vertices onto the sweep plane
             for (var v = _mesh._vHead._next; v != _mesh._vHead; v = v._next)
             {
-                MeshUtils.Vec3.Dot(ref v._coords, ref _sUnit, out v._s);
-                MeshUtils.Vec3.Dot(ref v._coords, ref _tUnit, out v._t);
+                Vec3.Dot(ref v._coords, ref _sUnit, out v._s);
+                Vec3.Dot(ref v._coords, ref _tUnit, out v._t);
             }
             if (computedNormal)
             {
@@ -404,7 +417,7 @@ namespace LibTessDotNet
             return edge._Rface._n;
         }
 
-        private void OutputPolymesh(ElementType elementType, int polySize, int vertexSize)
+        private void OutputPolymesh(ElementType elementType, int polySize)
         {
             MeshUtils.Vertex v;
             MeshUtils.Face f;
@@ -460,7 +473,7 @@ namespace LibTessDotNet
             _elements = new int[maxFaceCount * polySize];
 
             _vertexCount = maxVertexCount;
-            _vertices = new float[_vertexCount * vertexSize];
+            _vertices = new ContourVertex[_vertexCount];
             _vertexIndices = new int[_vertexCount];
 
             // Output vertices.
@@ -469,11 +482,9 @@ namespace LibTessDotNet
                 if (v._n != MeshUtils.Undef)
                 {
                     // Store coordinate
-                    int n = v._n * vertexSize;
-                    _vertices[n + 0] = v._coords.X;
-                    _vertices[n + 1] = v._coords.Y;
-                    if (vertexSize > 2)
-                        _vertices[n + 2] = v._coords.Z;
+                    int n = v._n;
+                    _vertices[v._n].Position = v._coords;
+                    _vertices[v._n].Data = v._data;
                     // Store vertex index.
                     _vertexIndices[v._n] = v._idx;
                 }
@@ -496,7 +507,9 @@ namespace LibTessDotNet
                 } while (edge != f._anEdge);
                 // Fill unused.
                 for (i = faceVerts; i < polySize; ++i)
+                {
                     _elements[elementIndex++] = MeshUtils.Undef;
+                }
 
                 // Store polygon connectivity
                 if (elementType == ElementType.ConnectedPolygons)
@@ -506,16 +519,17 @@ namespace LibTessDotNet
                     {
                         _elements[elementIndex++] = GetNeighbourFace(edge);
                         edge = edge._Lnext;
-                    }
-                    while (edge != f._anEdge);
+                    } while (edge != f._anEdge);
                     // Fill unused.
                     for (i = faceVerts; i < polySize; ++i)
+                    {
                         _elements[elementIndex++] = MeshUtils.Undef;
+                    }
                 }
             }
         }
 
-        private void OutputContours(int vertexSize)
+        private void OutputContours()
         {
             MeshUtils.Face f;
             MeshUtils.Edge edge, start;
@@ -541,7 +555,7 @@ namespace LibTessDotNet
             }
 
             _elements = new int[_elementCount * 2];
-            _vertices = new float[_vertexCount * vertexSize];
+            _vertices = new ContourVertex[_vertexCount];
             _vertexIndices = new int[_vertexCount];
 
             int vertIndex = 0;
@@ -558,10 +572,8 @@ namespace LibTessDotNet
                 start = edge = f._anEdge;
                 do
                 {
-                    _vertices[vertIndex++] = edge._Org._coords.X;
-                    _vertices[vertIndex++] = edge._Org._coords.Y;
-                    if (vertexSize > 2)
-                        _vertices[vertIndex++] = edge._Org._coords.Z;
+                    _vertices[vertIndex++].Position = edge._Org._coords;
+                    _vertices[vertIndex++].Data = edge._Org._data;
                     _vertexIndices[vertIndsIndex++] = edge._Org._idx;
                     ++vertCount;
                     edge = edge._Lnext;
@@ -575,21 +587,15 @@ namespace LibTessDotNet
             }
         }
 
-        public void AddContour(int size, float[] vertices)
+        public void AddContour(ContourVertex[] vertices)
         {
             if (_mesh == null)
             {
                 _mesh = new Mesh();
             }
 
-            if (size < 2)
-                size = 2;
-            if (size > 3)
-                size = 3;
-
             MeshUtils.Edge e = null;
-            int numVertices = vertices.Length / size;
-            for (int i = 0; i < numVertices; ++i)
+            for (int i = 0; i < vertices.Length; ++i)
             {
                 if (e == null)
                 {
@@ -605,13 +611,8 @@ namespace LibTessDotNet
                 }
 
                 // The new vertex is now e._Org.
-                int n = i * size;
-                e._Org._coords.X = vertices[n + 0];
-                e._Org._coords.Y = vertices[n + 1];
-                if ( size > 2 )
-                    e._Org._coords.Z = vertices[n + 2];
-                else
-                    e._Org._coords.Z = 0.0f;
+                e._Org._coords = vertices[i].Position;
+                e._Org._data = vertices[i].Data;
 
                 // Store the insertion number so that the vertex can be later recognized.
                 e._Org._idx = _vertexIndexCounter++;
@@ -625,7 +626,12 @@ namespace LibTessDotNet
             }
         }
 
-        public void Tesselate(WindingRule windingRule, ElementType elementType, int polySize, int vertexSize, float[] normal)
+        public void Tessellate(WindingRule windingRule, ElementType elementType, int polySize)
+        {
+            Tessellate(windingRule, elementType, polySize, null);
+        }
+
+        public void Tessellate(WindingRule windingRule, ElementType elementType, int polySize, CombineCallback combineCallback)
         {
             _vertices = null;
             _elements = null;
@@ -633,19 +639,8 @@ namespace LibTessDotNet
 
             _vertexIndexCounter = 0;
 
-            if (normal != null && normal.Length == 3)
-            {
-                _normal.X = normal[0];
-                _normal.Y = normal[1];
-                _normal.Z = normal[2];
-            }
-
             _windingRule = windingRule;
-
-            if (vertexSize < 2)
-                vertexSize = 2;
-            if (vertexSize > 3)
-                vertexSize = 3;
+            _combineCallback = combineCallback;
 
             if (_mesh == null)
             {
@@ -679,11 +674,11 @@ namespace LibTessDotNet
 
             if (elementType == ElementType.BoundaryContours)
             {
-                OutputContours(vertexSize);
+                OutputContours();
             }
             else
             {
-                OutputPolymesh(elementType, polySize, vertexSize);
+                OutputPolymesh(elementType, polySize);
             }
 
             _mesh = null;

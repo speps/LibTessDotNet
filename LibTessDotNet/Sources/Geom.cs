@@ -42,7 +42,7 @@ namespace LibTessDotNet
         {
             switch (rule)
             {
-                case WindingRule.OddEven:
+                case WindingRule.EvenOdd:
                     return (n & 1) == 1;
                 case WindingRule.NonZero:
                     return n != 0;

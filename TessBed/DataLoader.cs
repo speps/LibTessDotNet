@@ -1,15 +1,16 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Globalization;
+using System.IO;
 using System.Reflection;
-using System.Diagnostics;
 
 namespace TessBed
 {
     public struct PolygonPoint
     {
         public float X, Y;
+        public Color Color;
     }
 
     public class Polygon : List<PolygonPoint>
@@ -28,7 +29,7 @@ namespace TessBed
 
     public class PolygonSet : List<Polygon>
     {
-
+        public bool HasColors = false;
     }
 
     public class DataLoader
@@ -46,6 +47,7 @@ namespace TessBed
             int lineNum = 0;
             string line;
             bool skipLine = false;
+            Color currentColor = Color.White;
             using (var stream = new StreamReader(fileStream))
             {
                 while ((line = stream.ReadLine()) != null)
@@ -81,15 +83,41 @@ namespace TessBed
                         }
                         continue;
                     }
+                    if (line.StartsWith("color", true, CultureInfo.InvariantCulture))
+                    {
+                        var rgba = line.Split(new[] { ' ', ',', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+                        int r = 255, g = 255, b = 255, a = 255;
+                        if (rgba != null)
+                        {
+                            if (rgba.Length == 4 &&
+                                int.TryParse(rgba[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out r) &&
+                                int.TryParse(rgba[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out g) &&
+                                int.TryParse(rgba[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out b))
+                            {
+                                currentColor = Color.FromArgb(r, g, b);
+                                polys.HasColors = true;
+                            }
+                            else if (rgba.Length == 5 &&
+                                int.TryParse(rgba[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out r) &&
+                                int.TryParse(rgba[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out g) &&
+                                int.TryParse(rgba[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out b) &&
+                                int.TryParse(rgba[4], NumberStyles.Integer, CultureInfo.InvariantCulture, out a))
+                            {
+                                currentColor = Color.FromArgb(a, r, g, b);
+                                polys.HasColors = true;
+                            }
+                        }
+                    }
+                    else
                     {
                         float x, y;
-                        var xy = line.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                        var xy = line.Split(new[] { ' ', ',', '\t' }, StringSplitOptions.RemoveEmptyEntries);
                         if (xy != null &&
                             xy.Length >= 2 &&
                             float.TryParse(xy[0], NumberStyles.Float, CultureInfo.InvariantCulture, out x) &&
                             float.TryParse(xy[1], NumberStyles.Float, CultureInfo.InvariantCulture, out y))
                         {
-                            points.Add(new PolygonPoint { X = x, Y = y });
+                            points.Add(new PolygonPoint { X = x, Y = y, Color = currentColor });
                         }
                         else
                         {

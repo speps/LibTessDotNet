@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using System.Drawing.Drawing2D;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Windows.Forms;
 
 namespace TessBed
 {
@@ -12,6 +9,8 @@ namespace TessBed
     {
         public PolygonSet Input;
         public PolygonSet Output;
+        public bool ShowInput = true;
+        public bool ShowWinding = false;
 
         public Canvas()
         {
@@ -50,18 +49,25 @@ namespace TessBed
             Func<PolygonPoint, PointF> f = (p) => new PointF { X = (p.X - xmid) * zoom, Y = (p.Y - ymid) * zoom };
 
             using (var penContour = new Pen(Color.FromArgb(128, 0, 0, 128), 2.0f))
-            using (var brushPoint = new SolidBrush(Color.FromArgb(128, 0, 0, 0)))
+            using (var penWinding = new Pen(Color.FromArgb(255, 0, 0, 128), 6.0f))
+            using (var brushPoint = new SolidBrush(Color.FromArgb(255, 0, 0, 0)))
             using (var penOutput = new Pen(Color.FromArgb(32, 0, 0, 0), 1.0f))
+            using (var penPolys = new Pen(Color.FromArgb(64, 0, 0, 0), 1.0f))
+            using (var brushPolys = new SolidBrush(Color.FromArgb(64, 255, 207, 130)))
             {
-                foreach (var polygon in Input)
+                penWinding.EndCap = LineCap.ArrowAnchor;
+                if (ShowInput)
                 {
-                    for (int i = 0; i < polygon.Count; i++)
+                    foreach (var polygon in Input)
                     {
-                        var p0 = f(polygon[i]);
-                        var p1 = f(polygon[(i + 1) % polygon.Count]);
+                        for (int i = 0; i < polygon.Count; i++)
+                        {
+                            var p0 = f(polygon[i]);
+                            var p1 = f(polygon[(i + 1) % polygon.Count]);
 
-                        g.DrawLine(penContour, p0, p1);
-                        g.FillEllipse(brushPoint, p0.X - 2.0f, p0.Y - 2.0f, 4.0f, 4.0f);
+                            g.DrawLine(ShowWinding ? penWinding : penContour, p0, p1);
+                            g.FillEllipse(brushPoint, p0.X - 2.0f, p0.Y - 2.0f, 4.0f, 4.0f);
+                        }
                     }
                 }
 
@@ -70,12 +76,44 @@ namespace TessBed
 
                 foreach (var polygon in Output)
                 {
+                    var pts = new PointF[polygon.Count];
                     for (int i = 0; i < polygon.Count; i++)
                     {
-                        var p0 = f(polygon[i]);
-                        var p1 = f(polygon[(i + 1) % polygon.Count]);
+                        pts[i] = f(polygon[i]);
+                    }
 
-                        g.DrawLine(penOutput, p0, p1);
+                    if (Input.HasColors)
+                    {
+                        var colors = new Color[pts.Length];
+                        int[] mean = new int[4];
+                        for (int i = 0; i < pts.Length; i++)
+                        {
+                            colors[i] = polygon[i].Color;
+                            mean[0] += colors[i].R;
+                            mean[1] += colors[i].G;
+                            mean[2] += colors[i].B;
+                            mean[3] += colors[i].A;
+                        }
+
+                        using (var brush = new PathGradientBrush(pts))
+                        using (var pen = new Pen(brush, 20.0f))
+                        {
+                            brush.SurroundColors = colors;
+                            brush.CenterColor = Color.FromArgb(mean[3] / colors.Length, mean[0] / colors.Length, mean[1] / colors.Length, mean[2] / colors.Length);
+
+                            g.FillPolygon(brush, pts);
+                        }
+                    }
+                    else
+                    {
+                        g.FillPolygon(brushPolys, pts);
+                    }
+                    for (int i = 0; i < pts.Length; i++)
+                    {
+                        var p0 = pts[i];
+                        var p1 = pts[(i + 1) % polygon.Count];
+
+                        g.DrawLine(ShowInput ? penOutput : penPolys, p0, p1);
                     }
                 }
             }

@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.statusMain = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStrip = new System.Windows.Forms.ToolStrip();
@@ -39,7 +40,10 @@
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripLabelPolySize = new System.Windows.Forms.ToolStripLabel();
             this.toolStripPolySize = new System.Windows.Forms.ToolStripTextBox();
+            this.toolStripButtonShowInput = new System.Windows.Forms.ToolStripButton();
+            this.toolStripButtonShowWinding = new System.Windows.Forms.ToolStripButton();
             this.panel = new System.Windows.Forms.Panel();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.statusStrip.SuspendLayout();
             this.toolStrip.SuspendLayout();
             this.SuspendLayout();
@@ -69,7 +73,10 @@
             this.toolStripWinding,
             this.toolStripSeparator2,
             this.toolStripLabelPolySize,
-            this.toolStripPolySize});
+            this.toolStripPolySize,
+            this.toolStripSeparator3,
+            this.toolStripButtonShowInput,
+            this.toolStripButtonShowWinding});
             this.toolStrip.Location = new System.Drawing.Point(0, 0);
             this.toolStrip.Name = "toolStrip";
             this.toolStrip.Size = new System.Drawing.Size(684, 25);
@@ -120,6 +127,27 @@
             this.toolStripPolySize.Name = "toolStripPolySize";
             this.toolStripPolySize.Size = new System.Drawing.Size(40, 25);
             // 
+            // toolStripButtonShowInput
+            // 
+            this.toolStripButtonShowInput.CheckOnClick = true;
+            this.toolStripButtonShowInput.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripButtonShowInput.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonShowInput.Image")));
+            this.toolStripButtonShowInput.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButtonShowInput.Name = "toolStripButtonShowInput";
+            this.toolStripButtonShowInput.Size = new System.Drawing.Size(71, 22);
+            this.toolStripButtonShowInput.Text = "Show input";
+            this.toolStripButtonShowInput.ToolTipText = "Show input polygon";
+            // 
+            // toolStripButtonShowWinding
+            // 
+            this.toolStripButtonShowWinding.CheckOnClick = true;
+            this.toolStripButtonShowWinding.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripButtonShowWinding.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonShowWinding.Image")));
+            this.toolStripButtonShowWinding.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButtonShowWinding.Name = "toolStripButtonShowWinding";
+            this.toolStripButtonShowWinding.Size = new System.Drawing.Size(86, 22);
+            this.toolStripButtonShowWinding.Text = "Show winding";
+            // 
             // panel
             // 
             this.panel.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -127,6 +155,11 @@
             this.panel.Name = "panel";
             this.panel.Size = new System.Drawing.Size(684, 515);
             this.panel.TabIndex = 2;
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
             // 
             // MainForm
             // 
@@ -162,6 +195,9 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripLabel toolStripLabelPolySize;
         private System.Windows.Forms.ToolStripTextBox toolStripPolySize;
+        private System.Windows.Forms.ToolStripButton toolStripButtonShowInput;
+        private System.Windows.Forms.ToolStripButton toolStripButtonShowWinding;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
     }
 }
 
