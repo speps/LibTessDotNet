@@ -19,5 +19,5 @@ TBD
 SGI FREE SOFTWARE LICENSE B (Version 2.0, Sept. 18, 2008)
 
 ### Links
-* [Reference implementation](ftp://oss.sgi.com/projects/ogl-sample/download/) - the original reference implementation can be found there
+* [Reference implementation](http://oss.sgi.com/projects/ogl-sample) - the original reference implementation
 * [libtess2](http://code.google.com/p/libtess2/) - Mikko Mononen cleaned up the original GLU tesselator
