@@ -14,6 +14,11 @@ Provide a robust and fast tesselator (polygons with N vertices in the output) fo
 
 TBD
 
+### TODO
+
+* More .NET-style interface (ie. don't use float[] for input/output)
+* Custom vertex attributes (eg. UV coordinates)
+
 ### License
 
 SGI FREE SOFTWARE LICENSE B (Version 2.0, Sept. 18, 2008)
