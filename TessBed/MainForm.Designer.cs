@@ -40,10 +40,11 @@
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripLabelPolySize = new System.Windows.Forms.ToolStripLabel();
             this.toolStripPolySize = new System.Windows.Forms.ToolStripTextBox();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripButtonShowInput = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonShowWinding = new System.Windows.Forms.ToolStripButton();
+            this.toolStripButtonBench = new System.Windows.Forms.ToolStripButton();
             this.panel = new System.Windows.Forms.Panel();
-            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.statusStrip.SuspendLayout();
             this.toolStrip.SuspendLayout();
             this.SuspendLayout();
@@ -54,7 +55,7 @@
             this.statusMain});
             this.statusStrip.Location = new System.Drawing.Point(0, 540);
             this.statusStrip.Name = "statusStrip";
-            this.statusStrip.Size = new System.Drawing.Size(684, 22);
+            this.statusStrip.Size = new System.Drawing.Size(752, 22);
             this.statusStrip.TabIndex = 1;
             this.statusStrip.Text = "statusStrip1";
             // 
@@ -76,10 +77,11 @@
             this.toolStripPolySize,
             this.toolStripSeparator3,
             this.toolStripButtonShowInput,
-            this.toolStripButtonShowWinding});
+            this.toolStripButtonShowWinding,
+            this.toolStripButtonBench});
             this.toolStrip.Location = new System.Drawing.Point(0, 0);
             this.toolStrip.Name = "toolStrip";
-            this.toolStrip.Size = new System.Drawing.Size(684, 25);
+            this.toolStrip.Size = new System.Drawing.Size(752, 25);
             this.toolStrip.TabIndex = 0;
             // 
             // toolStripLabelAsset
@@ -127,6 +129,11 @@
             this.toolStripPolySize.Name = "toolStripPolySize";
             this.toolStripPolySize.Size = new System.Drawing.Size(40, 25);
             // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
+            // 
             // toolStripButtonShowInput
             // 
             this.toolStripButtonShowInput.CheckOnClick = true;
@@ -148,24 +155,28 @@
             this.toolStripButtonShowWinding.Size = new System.Drawing.Size(86, 22);
             this.toolStripButtonShowWinding.Text = "Show winding";
             // 
+            // toolStripButtonBench
+            // 
+            this.toolStripButtonBench.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripButtonBench.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonBench.Image")));
+            this.toolStripButtonBench.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButtonBench.Name = "toolStripButtonBench";
+            this.toolStripButtonBench.Size = new System.Drawing.Size(76, 22);
+            this.toolStripButtonBench.Text = "Benchmarks";
+            // 
             // panel
             // 
             this.panel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel.Location = new System.Drawing.Point(0, 25);
             this.panel.Name = "panel";
-            this.panel.Size = new System.Drawing.Size(684, 515);
+            this.panel.Size = new System.Drawing.Size(752, 515);
             this.panel.TabIndex = 2;
-            // 
-            // toolStripSeparator3
-            // 
-            this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(684, 562);
+            this.ClientSize = new System.Drawing.Size(752, 562);
             this.Controls.Add(this.panel);
             this.Controls.Add(this.toolStrip);
             this.Controls.Add(this.statusStrip);
@@ -198,6 +209,7 @@
         private System.Windows.Forms.ToolStripButton toolStripButtonShowInput;
         private System.Windows.Forms.ToolStripButton toolStripButtonShowWinding;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripButton toolStripButtonBench;
     }
 }
 

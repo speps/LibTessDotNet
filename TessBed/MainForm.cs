@@ -69,6 +69,11 @@ namespace TessBed
                 RefreshAsset(toolStripAssets.SelectedIndex);
             };
 
+            toolStripButtonBench.Click += delegate(object sender, EventArgs e)
+            {
+                new BenchForm().ShowDialog(this);
+            };
+
             SetAsset("redbook-winding");
             SetShowInput(true);
             SetShowWinding(false);

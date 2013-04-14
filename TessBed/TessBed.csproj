@@ -36,11 +36,22 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Poly2Tri">
+      <HintPath>Externals\Poly2Tri\Poly2Tri.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BenchForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="BenchForm.Designer.cs">
+      <DependentUpon>BenchForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Canvas.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -53,6 +64,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="BenchForm.resx">
+      <DependentUpon>BenchForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
