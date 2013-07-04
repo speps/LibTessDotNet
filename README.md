@@ -31,17 +31,14 @@ Provide a robust and fast tessellator (polygons with N vertices in the output) f
 
 ![Redbook winding example](https://raw.github.com/speps/LibTessDotNet/master/TessBed/Misc/screenshot.png)
 
-![Benchmarks](https://raw.github.com/speps/LibTessDotNet/master/TessBed/Misc/benchmarks.png)
-
 ### Comparison
 
-TBD
+![Benchmarks](https://raw.github.com/speps/LibTessDotNet/master/TessBed/Misc/benchmarks.png)
 
 ### TODO
 
-* Better performance timing (eg. multiple loops instead of one)
 * Profile GC allocations
-* Comparison with [Poly2Tri](http://code.google.com/p/poly2tri/)
+* Any suggestions are welcome ;)
 
 ### License
 
