@@ -52,6 +52,14 @@ namespace LibTessDotNet
                     return n < 0;
                 case WindingRule.AbsGeqTwo:
                     return n >= 2 || n <= -2;
+                case WindingRule.OddPositive:
+                    return (n & 1) == 1 && n > 0;
+                case WindingRule.OddNegative:
+                    return (n & 1) == 1 && n < 0;
+                case WindingRule.EvenPositive:
+                    return (n & 1) == 0 && n > 0;
+                case WindingRule.EvenNegative:
+                    return (n & 1) == 0 && n < 0;
             }
             throw new Exception("Wrong winding rule");
         }
@@ -191,8 +199,8 @@ namespace LibTessDotNet
 
         public static float Interpolate(float a, float x, float b, float y)
         {
-            a = a < 0.0f ? 0.0f : a;
-            b = b < 0.0f ? 0.0f : b;
+            if (a < 0.0f) a = 0.0f;
+            if (b < 0.0f) b = 0.0f;
             return ((a <= b) ? ((b == 0.0f) ? ((x+y) / 2.0f)
                     : (x + (y-x) * (a/(a+b))))
                     : (y + (x-y) * (b/(a+b))));

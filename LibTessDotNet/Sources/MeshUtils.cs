@@ -100,19 +100,19 @@ namespace LibTessDotNet
     {
         public const int Undef = ~0;
 
-        public class Vertex
+        public class Vertex : ReusedObject<Vertex>
         {
             internal Vertex _prev, _next;
             internal Edge _anEdge;
 
             internal Vec3 _coords;
             internal float _s, _t;
-            internal PQHandle _pqHandle;
+            internal int _pqHandle;
             internal int _n;
             internal object _data;
         }
 
-        public class Face
+        public class Face : ReusedObject<Face>
         {
             internal Face _prev, _next;
             internal Edge _anEdge;
@@ -143,15 +143,21 @@ namespace LibTessDotNet
             public static EdgePair Create()
             {
                 var pair = new EdgePair();
-                pair._e = new Edge();
+                pair._e = Edge.Create();
                 pair._e._pair = pair;
-                pair._eSym = new Edge();
+                pair._eSym = Edge.Create();
                 pair._eSym._pair = pair;
                 return pair;
             }
+
+            public void Free()
+            {
+                _e.Free();
+                _eSym.Free();
+            }
         }
 
-        public class Edge
+        public class Edge : ReusedObject<Edge>
         {
             internal EdgePair _pair;
             internal Edge _next, _Sym, _Onext, _Lnext;
@@ -170,7 +176,7 @@ namespace LibTessDotNet
             internal Edge _Dnext { get { return _Rprev._Sym; } set { _Rprev._Sym = value; } }
             internal Edge _Rnext { get { return _Oprev._Sym; } set { _Oprev._Sym = value; } }
 
-            internal Edge() { }
+            public Edge() { }
 
             internal static void EnsureFirst(ref Edge e)
             {
@@ -319,6 +325,8 @@ namespace LibTessDotNet
             var ePrev = eDel._Sym._next;
             eNext._Sym._next = ePrev;
             ePrev._Sym._next = eNext;
+
+            eDel.Free();
         }
 
         /// <summary>
@@ -341,6 +349,8 @@ namespace LibTessDotNet
             var vNext = vDel._next;
             vNext._prev = vPrev;
             vPrev._next = vNext;
+
+            vDel.Free();
         }
 
         /// <summary>
@@ -363,6 +373,8 @@ namespace LibTessDotNet
             var fNext = fDel._next;
             fNext._prev = fPrev;
             fPrev._next = fNext;
+
+            fDel.Free();
         }
     }
 }

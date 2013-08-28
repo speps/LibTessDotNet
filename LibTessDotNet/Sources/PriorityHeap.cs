@@ -39,20 +39,17 @@ namespace LibTessDotNet
     public struct PQHandle
     {
         public static readonly int Invalid = 0x0fffffff;
-        internal int _handle;
+        //internal int _handle;
     }
 
-    public class PriorityHeap<TValue> where TValue : class
+    public class VertexPriorityHeap
     {
-        public delegate bool LessOrEqual(TValue lhs, TValue rhs);
-
         protected class HandleElem
         {
-            internal TValue _key;
+            internal MeshUtils.Vertex _key;
             internal int _node;
         }
 
-        private LessOrEqual _leq;
         private int[] _nodes;
         private HandleElem[] _handles;
         private int _size, _max;
@@ -61,12 +58,10 @@ namespace LibTessDotNet
 
         public bool Empty { get { return _size == 0; } }
 
-        public PriorityHeap(int initialSize, LessOrEqual leq)
+        public VertexPriorityHeap(int initialSize)
         {
-            _leq = leq;
-
-            _nodes = new int[initialSize + 1];
-            _handles = new HandleElem[initialSize + 1];
+            _nodes = ArrayPool<int>.Create(initialSize + 1, true);
+            _handles = ArrayPool<HandleElem>.Create(initialSize + 1, true);
 
             _size = 0;
             _max = initialSize;
@@ -75,6 +70,12 @@ namespace LibTessDotNet
 
             _nodes[1] = 1;
             _handles[1] = new HandleElem { _key = null };
+        }
+
+        public void Free()
+        {
+            ArrayPool<int>.Free(_nodes);
+            ArrayPool<HandleElem>.Free(_handles);
         }
 
         private void FloatDown(int curr)
@@ -86,7 +87,7 @@ namespace LibTessDotNet
             while (true)
             {
                 child = curr << 1;
-                if (child < _size && _leq(_handles[_nodes[child + 1]]._key, _handles[_nodes[child]]._key))
+                if (child < _size && Geom.VertLeq(_handles[_nodes[child + 1]]._key, _handles[_nodes[child]]._key))
                 {
                     ++child;
                 }
@@ -94,7 +95,7 @@ namespace LibTessDotNet
                 Debug.Assert(child <= _max);
 
                 hChild = _nodes[child];
-                if (child > _size || _leq(_handles[hCurr]._key, _handles[hChild]._key))
+                if (child > _size || Geom.VertLeq(_handles[hCurr]._key, _handles[hChild]._key))
                 {
                     _nodes[curr] = hCurr;
                     _handles[hCurr]._node = curr;
@@ -117,7 +118,7 @@ namespace LibTessDotNet
             {
                 parent = curr >> 1;
                 hParent = _nodes[parent];
-                if (parent == 0 || _leq(_handles[hParent]._key, _handles[hCurr]._key))
+                if (parent == 0 || Geom.VertLeq(_handles[hParent]._key, _handles[hCurr]._key))
                 {
                     _nodes[curr] = hCurr;
                     _handles[hCurr]._node = curr;
@@ -138,14 +139,14 @@ namespace LibTessDotNet
             _initialized = true;
         }
 
-        public PQHandle Insert(TValue value)
+        internal int Insert(MeshUtils.Vertex value)
         {
             int curr = ++_size;
             if ((curr * 2) > _max)
             {
                 _max <<= 1;
-                Array.Resize(ref _nodes, _max + 1);
-                Array.Resize(ref _handles, _max + 1);
+                ArrayPool<int>.Resize(ref _nodes, _max + 1, true);
+                ArrayPool<HandleElem>.Resize(ref _handles, _max + 1, true);
             }
 
             int free;
@@ -176,15 +177,15 @@ namespace LibTessDotNet
             }
 
             Debug.Assert(free != PQHandle.Invalid);
-            return new PQHandle { _handle = free };
+            return free;
         }
 
-        public TValue ExtractMin()
+        internal MeshUtils.Vertex ExtractMin()
         {
             Debug.Assert(_initialized);
 
             int hMin = _nodes[1];
-            TValue min = _handles[hMin]._key;
+            MeshUtils.Vertex min = _handles[hMin]._key;
 
             if (_size > 0)
             {
@@ -204,17 +205,17 @@ namespace LibTessDotNet
             return min;
         }
 
-        public TValue Minimum()
+        internal MeshUtils.Vertex Minimum()
         {
             Debug.Assert(_initialized);
             return _handles[_nodes[1]]._key;
         }
 
-        public void Remove(PQHandle handle)
+        public void Remove(int handle)
         {
             Debug.Assert(_initialized);
 
-            int hCurr = handle._handle;
+            int hCurr = handle;
             Debug.Assert(hCurr >= 1 && hCurr <= _max && _handles[hCurr]._key != null);
 
             int curr = _handles[hCurr]._node;
@@ -223,7 +224,7 @@ namespace LibTessDotNet
 
             if (curr <= --_size)
             {
-                if (curr <= 1 || _leq(_handles[_nodes[curr >> 1]]._key, _handles[_nodes[curr]]._key))
+                if (curr <= 1 || Geom.VertLeq(_handles[_nodes[curr >> 1]]._key, _handles[_nodes[curr]]._key))
                 {
                     FloatDown(curr);
                 }
