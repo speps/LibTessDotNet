@@ -33,44 +33,43 @@
 
 namespace LibTessDotNet
 {
-    public class Dict<TValue> where TValue : class
+    public class ActiveRegionDict
     {
-        public class Node
+        public class Node : ReusedObject<Node>
         {
-            internal TValue _key;
+            internal Tess.ActiveRegion _key;
             internal Node _prev, _next;
 
-            public TValue Key { get { return _key; } }
+            internal Tess.ActiveRegion Key { get { return _key; } }
             public Node Prev { get { return _prev; } }
             public Node Next { get { return _next; } }
         }
 
-        public delegate bool LessOrEqual(TValue lhs, TValue rhs);
-
-        private LessOrEqual _leq;
+        Tess _tess;
         Node _head;
 
-        public Dict(LessOrEqual leq)
+        public ActiveRegionDict(Tess tess)
         {
-            _leq = leq;
-
-            _head = new Node { _key = null };
+            _tess = tess;
+            _head = Node.Create();
+            _head._key = null;
             _head._prev = _head;
             _head._next = _head;
         }
 
-        public Node Insert(TValue key)
+        internal Node Insert(Tess.ActiveRegion key)
         {
             return InsertBefore(_head, key);
         }
 
-        public Node InsertBefore(Node node, TValue key)
+        internal Node InsertBefore(Node node, Tess.ActiveRegion key)
         {
             do {
                 node = node._prev;
-            } while (node._key != null && !_leq(node._key, key));
+            } while (node._key != null && !_tess.EdgeLeq(node._key, key));
 
-            var newNode = new Node { _key = key };
+            var newNode = Node.Create();
+            newNode._key = key;
             newNode._next = node._next;
             node._next._prev = newNode;
             newNode._prev = node;
@@ -79,12 +78,12 @@ namespace LibTessDotNet
             return newNode;
         }
 
-        public Node Find(TValue key)
+        internal Node Find(Tess.ActiveRegion key)
         {
             var node = _head;
             do {
                 node = node._next;
-            } while (node._key != null && !_leq(key, node._key));
+            } while (node._key != null && !_tess.EdgeLeq(key, node._key));
             return node;
         }
 

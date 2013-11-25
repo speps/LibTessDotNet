@@ -42,12 +42,14 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Sources\ArrayPool.cs" />
     <Compile Include="Sources\Dict.cs" />
     <Compile Include="Sources\Geom.cs" />
     <Compile Include="Sources\Mesh.cs" />
     <Compile Include="Sources\MeshUtils.cs" />
     <Compile Include="Sources\PriorityHeap.cs" />
     <Compile Include="Sources\PriorityQueue.cs" />
+    <Compile Include="Sources\ReusedObject.cs" />
     <Compile Include="Sources\Sweep.cs" />
     <Compile Include="Sources\Tess.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

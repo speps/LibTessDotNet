@@ -37,11 +37,10 @@ using System.Diagnostics;
 
 namespace LibTessDotNet
 {
-    public class PriorityQueue<TValue> where TValue : class
+    public class VertexPriorityQueue
     {
-        private PriorityHeap<TValue>.LessOrEqual _leq;
-        private PriorityHeap<TValue> _heap;
-        private TValue[] _keys;
+        private VertexPriorityHeap _heap;
+        private MeshUtils.Vertex[] _keys;
         private int[] _order;
 
         private int _size, _max;
@@ -49,22 +48,29 @@ namespace LibTessDotNet
 
         public bool Empty { get { return _size == 0 && _heap.Empty; } }
 
-        public PriorityQueue(int initialSize, PriorityHeap<TValue>.LessOrEqual leq)
+        public VertexPriorityQueue(int initialSize)
         {
-            _leq = leq;
-            _heap = new PriorityHeap<TValue>(initialSize, leq);
+            _heap = new VertexPriorityHeap(initialSize);
 
-            _keys = new TValue[initialSize];
+            _keys = ArrayPool<MeshUtils.Vertex>.Create(initialSize, true);
 
             _size = 0;
             _max = initialSize;
             _initialized = false;
         }
 
-        class StackItem
+        public void Free()
+        {
+            _heap.Free();
+            ArrayPool<MeshUtils.Vertex>.Free(_keys);
+            ArrayPool<int>.Free(_order);
+        }
+
+        struct StackItem
         {
             internal int p, r;
         };
+
         void Swap<T>(ref T a, ref T b)
         {
             T tmp = a;
@@ -74,22 +80,25 @@ namespace LibTessDotNet
 
         public void Init()
         {
-            var stack = new Stack<StackItem>();
+            var stack = ArrayPool<StackItem>.Create(_size + 1, true);
+            int stackPos = -1;
+            
             int p, r, i, j, piv;
             uint seed = 2016473283;
 
             p = 0;
             r = _size - 1;
-            _order = new int[_size + 1];
+            _order = ArrayPool<int>.Create(_size + 1, true);
             for (piv = 0, i = p; i <= r; ++piv, ++i)
             {
                 _order[i] = piv;
             }
 
-            stack.Push(new StackItem { p = p, r = r });
-            while (stack.Count > 0)
+            stack[++stackPos] = new StackItem { p = p, r = r };
+
+            while (stackPos >= 0)
             {
-                var top = stack.Pop();
+                var top = stack[stackPos--];
                 p = top.p;
                 r = top.r;
 
@@ -103,26 +112,26 @@ namespace LibTessDotNet
                     i = p - 1;
                     j = r + 1;
                     do {
-                        do { ++i; } while (!_leq(_keys[_order[i]], _keys[piv]));
-                        do { --j; } while (!_leq(_keys[piv], _keys[_order[j]]));
+                        do { ++i; } while (!Geom.VertLeq(_keys[_order[i]], _keys[piv]));
+                        do { --j; } while (!Geom.VertLeq(_keys[piv], _keys[_order[j]]));
                         Swap(ref _order[i], ref _order[j]);
                     } while (i < j);
                     Swap(ref _order[i], ref _order[j]);
                     if (i - p < r - j)
                     {
-                        stack.Push(new StackItem { p = j + 1, r = r });
+                        stack[++stackPos] = new StackItem { p = j + 1, r = r };
                         r = i - 1;
                     }
                     else
                     {
-                        stack.Push(new StackItem { p = p, r = i - 1 });
+                        stack[++stackPos] = new StackItem { p = p, r = i - 1 };
                         p = j + 1;
                     }
                 }
                 for (i = p + 1; i <= r; ++i)
                 {
                     piv = _order[i];
-                    for (j = i; j > p && !_leq(_keys[piv], _keys[_order[j - 1]]); --j)
+                    for (j = i; j > p && !Geom.VertLeq(_keys[piv], _keys[_order[j - 1]]); --j)
                     {
                         _order[j] = _order[j - 1];
                     }
@@ -135,16 +144,18 @@ namespace LibTessDotNet
             r = _size - 1;
             for (i = p; i < r; ++i)
             {
-                Debug.Assert(_leq(_keys[_order[i + 1]], _keys[_order[i]]), "Wrong sort");
+                Debug.Assert(Geom.VertLeq(_keys[_order[i + 1]], _keys[_order[i]]), "Wrong sort");
             }
 #endif
+            
+            ArrayPool<StackItem>.Free(stack);
 
             _max = _size;
             _initialized = true;
             _heap.Init();
         }
 
-        public PQHandle Insert(TValue value)
+        internal int Insert(MeshUtils.Vertex value)
         {
             if (_initialized)
             {
@@ -155,14 +166,14 @@ namespace LibTessDotNet
             if (++_size >= _max)
             {
                 _max <<= 1;
-                Array.Resize(ref _keys, _max);
+                ArrayPool<MeshUtils.Vertex>.Resize(ref _keys, _max, true);
             }
 
             _keys[curr] = value;
-            return new PQHandle { _handle = -(curr + 1) };
+            return -(curr + 1);
         }
 
-        public TValue ExtractMin()
+        internal MeshUtils.Vertex ExtractMin()
         {
             Debug.Assert(_initialized);
 
@@ -170,11 +181,11 @@ namespace LibTessDotNet
             {
                 return _heap.ExtractMin();
             }
-            TValue sortMin = _keys[_order[_size - 1]];
+            MeshUtils.Vertex sortMin = _keys[_order[_size - 1]];
             if (!_heap.Empty)
             {
-                TValue heapMin = _heap.Minimum();
-                if (_leq(heapMin, sortMin))
+                MeshUtils.Vertex heapMin = _heap.Minimum();
+                if (Geom.VertLeq(heapMin, sortMin))
                     return _heap.ExtractMin();
             }
             do {
@@ -184,7 +195,7 @@ namespace LibTessDotNet
             return sortMin;
         }
 
-        public TValue Minimum()
+        internal MeshUtils.Vertex Minimum()
         {
             Debug.Assert(_initialized);
 
@@ -192,21 +203,21 @@ namespace LibTessDotNet
             {
                 return _heap.Minimum();
             }
-            TValue sortMin = _keys[_order[_size - 1]];
+            MeshUtils.Vertex sortMin = _keys[_order[_size - 1]];
             if (!_heap.Empty)
             {
-                TValue heapMin = _heap.Minimum();
-                if (_leq(heapMin, sortMin))
+                MeshUtils.Vertex heapMin = _heap.Minimum();
+                if (Geom.VertLeq(heapMin, sortMin))
                     return heapMin;
             }
             return sortMin;
         }
 
-        public void Remove(PQHandle handle)
+        public void Remove(int handle)
         {
             Debug.Assert(_initialized);
 
-            int curr = handle._handle;
+            int curr = handle;
             if (curr >= 0)
             {
                 _heap.Remove(handle);

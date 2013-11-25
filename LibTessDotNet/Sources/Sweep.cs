@@ -38,10 +38,10 @@ namespace LibTessDotNet
 {
     public partial class Tess
     {
-        internal class ActiveRegion
+        internal class ActiveRegion : ReusedObject<ActiveRegion>
         {
             internal MeshUtils.Edge _eUp;
-            internal Dict<ActiveRegion>.Node _nodeUp;
+            internal ActiveRegionDict.Node _nodeUp;
             internal int _windingNumber;
             internal bool _inside, _sentinel, _dirty, _fixUpperEdge;
         }
@@ -67,33 +67,37 @@ namespace LibTessDotNet
         /// Special case: if both edge destinations are at the sweep event,
         /// we sort the edges by slope (they would otherwise compare equally).
         /// </summary>
-        private bool EdgeLeq(ActiveRegion reg1, ActiveRegion reg2)
+        internal bool EdgeLeq(ActiveRegion reg1, ActiveRegion reg2)
         {
             var e1 = reg1._eUp;
             var e2 = reg2._eUp;
 
-            if (e1._Dst == _event)
+            var evnt = _event;
+            var e1_Dst = e1._Sym._Org;
+            var e2_Dst = e2._Sym._Org;
+
+            if (e1_Dst == evnt)
             {
-                if (e2._Dst == _event)
+                if (e2_Dst == evnt)
                 {
                     // Two edges right of the sweep line which meet at the sweep event.
                     // Sort them by slope.
                     if (Geom.VertLeq(e1._Org, e2._Org))
                     {
-                        return Geom.EdgeSign(e2._Dst, e1._Org, e2._Org) <= 0.0f;
+                        return Geom.EdgeSign(e2_Dst, e1._Org, e2._Org) <= 0.0f;
                     }
-                    return Geom.EdgeSign(e1._Dst, e2._Org, e1._Org) >= 0.0f;
+                    return Geom.EdgeSign(e1_Dst, e2._Org, e1._Org) >= 0.0f;
                 }
-                return Geom.EdgeSign(e2._Dst, _event, e2._Org) <= 0.0f;
+                return Geom.EdgeSign(e2_Dst, evnt, e2._Org) <= 0.0f;
             }
-            if (e2._Dst == _event)
+            if (e2_Dst == evnt)
             {
-                return Geom.EdgeSign(e1._Dst, _event, e1._Org) >= 0.0f;
+                return Geom.EdgeSign(e1_Dst, evnt, e1._Org) >= 0.0f;
             }
 
             // General case - compute signed distance *from* e1, e2 to event
-            var t1 = Geom.EdgeEval(e1._Dst, _event, e1._Org);
-            var t2 = Geom.EdgeEval(e2._Dst, _event, e2._Org);
+            var t1 = Geom.EdgeEval(e1_Dst, evnt, e1._Org);
+            var t2 = Geom.EdgeEval(e2_Dst, evnt, e2._Org);
             return (t1 >= t2);
         }
 
@@ -106,6 +110,8 @@ namespace LibTessDotNet
                 // with a real edge).
                 Debug.Assert(reg._eUp._winding == 0);
             }
+            if (reg._eUp._activeRegion != null)
+                reg._eUp._activeRegion.Free();
             reg._eUp._activeRegion = null;
             _dict.Remove(reg._nodeUp);
         }
@@ -145,12 +151,12 @@ namespace LibTessDotNet
 
         private ActiveRegion TopRightRegion(ActiveRegion reg)
         {
-            var dst = reg._eUp._Dst;
+            var dst = reg._eUp._Sym._Org;
 
             // Find the region above the uppermost edge with the same destination
             do {
                 reg = RegionAbove(reg);
-            } while (reg._eUp._Dst == dst);
+            } while (reg._eUp._Sym._Org == dst);
 
             return reg;
         }
@@ -163,7 +169,7 @@ namespace LibTessDotNet
         /// </summary>
         private ActiveRegion AddRegionBelow(ActiveRegion regAbove, MeshUtils.Edge eNewUp)
         {
-            var regNew = new ActiveRegion();
+            var regNew = ActiveRegion.Create();
 
             regNew._eUp = eNewUp;
             regNew._nodeUp = _dict.InsertBefore(regAbove._nodeUp, regNew);
@@ -269,7 +275,7 @@ namespace LibTessDotNet
 
             var e = eFirst; do
             {
-                Debug.Assert(Geom.VertLeq(e._Org, e._Dst));
+                Debug.Assert(Geom.VertLeq(e._Org, e._Sym._Org));
                 AddRegionBelow(regUp, e._Sym);
                 e = e._Onext;
             } while (e != eLast);
@@ -407,7 +413,7 @@ namespace LibTessDotNet
 
             if (Geom.VertLeq(eUp._Org, eLo._Org))
             {
-                if (Geom.EdgeSign(eLo._Dst, eUp._Org, eLo._Org) > 0.0f)
+                if (Geom.EdgeSign(eLo._Sym._Org, eUp._Org, eLo._Org) > 0.0f)
                 {
                     return false;
                 }
@@ -429,7 +435,7 @@ namespace LibTessDotNet
             }
             else
             {
-                if (Geom.EdgeSign(eUp._Dst, eLo._Org, eUp._Org) < 0.0f)
+                if (Geom.EdgeSign(eUp._Sym._Org, eLo._Org, eUp._Org) < 0.0f)
                 {
                     return false;
                 }
@@ -466,11 +472,11 @@ namespace LibTessDotNet
             var eUp = regUp._eUp;
             var eLo = regLo._eUp;
 
-            Debug.Assert(!Geom.VertEq(eUp._Dst, eLo._Dst));
+            Debug.Assert(!Geom.VertEq(eUp._Sym._Org, eLo._Sym._Org));
 
-            if (Geom.VertLeq(eUp._Dst, eLo._Dst))
+            if (Geom.VertLeq(eUp._Sym._Org, eLo._Sym._Org))
             {
-                if (Geom.EdgeSign(eUp._Dst, eLo._Dst, eUp._Org) < 0.0f)
+                if (Geom.EdgeSign(eUp._Sym._Org, eLo._Sym._Org, eUp._Org) < 0.0f)
                 {
                     return false;
                 }
@@ -483,7 +489,7 @@ namespace LibTessDotNet
             }
             else
             {
-                if (Geom.EdgeSign(eLo._Dst, eUp._Dst, eLo._Org) > 0.0f)
+                if (Geom.EdgeSign(eLo._Sym._Org, eUp._Sym._Org, eLo._Org) > 0.0f)
                 {
                     return false;
                 }
@@ -513,8 +519,8 @@ namespace LibTessDotNet
             var eLo = regLo._eUp;
             var orgUp = eUp._Org;
             var orgLo = eLo._Org;
-            var dstUp = eUp._Dst;
-            var dstLo = eLo._Dst;
+            var dstUp = eUp._Sym._Org;
+            var dstLo = eLo._Sym._Org;
 
             Debug.Assert(!Geom.VertEq(dstLo, dstUp));
             Debug.Assert(Geom.EdgeSign(dstUp, _event, orgUp) <= 0.0f);
@@ -553,7 +559,7 @@ namespace LibTessDotNet
 
             // At this point the edges intersect, at least marginally
 
-            var isect = new MeshUtils.Vertex();
+            var isect = MeshUtils.Vertex.Create();
             Geom.EdgeIntersect(dstUp, orgUp, dstLo, orgLo, isect);
             // The following properties are guaranteed:
             Debug.Assert(Math.Min(orgUp._t, dstUp._t) <= isect._t);
@@ -655,10 +661,12 @@ namespace LibTessDotNet
             eUp._Org._s = isect._s;
             eUp._Org._t = isect._t;
             eUp._Org._pqHandle = _pq.Insert(eUp._Org);
-            if (eUp._Org._pqHandle._handle == PQHandle.Invalid)
+#if DEBUG
+            if (eUp._Org._pqHandle == PQHandle.Invalid)
             {
                 throw new InvalidOperationException("PQHandle should not be invalid");
             }
+#endif
             GetIntersectData(eUp._Org, orgUp, dstUp, orgLo, dstLo);
             RegionAbove(regUp)._dirty = regUp._dirty = regLo._dirty = true;
             return false;
@@ -699,7 +707,7 @@ namespace LibTessDotNet
                 eUp = regUp._eUp;
                 eLo = regLo._eUp;
 
-                if (eUp._Dst != eLo._Dst)
+                if (eUp._Sym._Org != eLo._Sym._Org)
                 {
                     // Check that the edge ordering is obeyed at the Dst vertices.
                     if (CheckForLeftSplice(regUp))
@@ -726,9 +734,9 @@ namespace LibTessDotNet
                 }
                 if (eUp._Org != eLo._Org)
                 {
-                    if(    eUp._Dst != eLo._Dst
+                    if(    eUp._Sym._Org != eLo._Sym._Org
                         && ! regUp._fixUpperEdge && ! regLo._fixUpperEdge
-                        && (eUp._Dst == _event || eLo._Dst == _event) )
+                        && (eUp._Sym._Org == _event || eLo._Sym._Org == _event) )
                     {
                         // When all else fails in CheckForIntersect(), it uses tess._event
                         // as the intersection location. To make this possible, it requires
@@ -750,7 +758,7 @@ namespace LibTessDotNet
                         CheckForRightSplice(regUp);
                     }
                 }
-                if (eUp._Org == eLo._Org && eUp._Dst == eLo._Dst)
+                if (eUp._Org == eLo._Org && eUp._Sym._Org == eLo._Sym._Org)
                 {
                     // A degenerate loop consisting of only two edges -- delete it.
                     Geom.AddWinding(eLo, eUp);
@@ -800,7 +808,7 @@ namespace LibTessDotNet
             var eLo = regLo._eUp;
             bool degenerate = false;
 
-            if (eUp._Dst != eLo._Dst)
+            if (eUp._Sym._Org != eLo._Sym._Org)
             {
                 CheckForIntersect(regUp);
             }
@@ -864,7 +872,7 @@ namespace LibTessDotNet
                 throw new InvalidOperationException("Vertices should have been merged before");
             }
 
-            if (!Geom.VertEq(e._Dst, vEvent))
+            if (!Geom.VertEq(e._Sym._Org, vEvent))
             {
                 // General case -- splice vEvent into edge e which passes through it
                 _mesh.SplitEdge(e._Sym);
@@ -900,7 +908,7 @@ namespace LibTessDotNet
         /// </summary>
         private void ConnectLeftVertex(MeshUtils.Vertex vEvent)
         {
-            var tmp = new ActiveRegion();
+            var tmp = ActiveRegion.Create();
 
             // Get a pointer to the active region containing vEvent
             tmp._eUp = vEvent._anEdge._Sym;
@@ -915,7 +923,7 @@ namespace LibTessDotNet
             var eLo = regLo._eUp;
 
             // Try merging with U or L first
-            if (Geom.EdgeSign(eUp._Dst, vEvent, eUp._Org) == 0.0f)
+            if (Geom.EdgeSign(eUp._Sym._Org, vEvent, eUp._Org) == 0.0f)
             {
                 ConnectLeftDegenerate(regUp, vEvent);
                 return;
@@ -923,7 +931,7 @@ namespace LibTessDotNet
 
             // Connect vEvent to rightmost processed vertex of either chain.
             // e._Dst is the vertex that we will connect to vEvent.
-            var reg = Geom.VertLeq(eLo._Dst, eUp._Dst) ? regUp : regLo;
+            var reg = Geom.VertLeq(eLo._Sym._Org, eUp._Sym._Org) ? regUp : regLo;
 
             if (regUp._inside || reg._fixUpperEdge)
             {
@@ -1015,11 +1023,11 @@ namespace LibTessDotNet
             var e = _mesh.MakeEdge();
             e._Org._s = smax;
             e._Org._t = t;
-            e._Dst._s = smin;
-            e._Dst._t = t;
-            _event = e._Dst; // initialize it
+            e._Sym._Org._s = smin;
+            e._Sym._Org._t = t;
+            _event = e._Sym._Org;
 
-            var reg = new ActiveRegion();
+            var reg = ActiveRegion.Create();
             reg._eUp = e;
             reg._windingNumber = 0;
             reg._inside = false;
@@ -1035,7 +1043,7 @@ namespace LibTessDotNet
         /// </summary>
         private void InitEdgeDict()
         {
-            _dict = new Dict<ActiveRegion>(EdgeLeq);
+            _dict = new ActiveRegionDict(this);
 
             var w = _bmaxX - _bminX;
             var h = _bmaxY - _bminY;
@@ -1083,7 +1091,7 @@ namespace LibTessDotNet
                 eNext = e._next;
                 eLnext = e._Lnext;
 
-                if (Geom.VertEq(e._Org, e._Dst) && e._Lnext._Lnext != e)
+                if (Geom.VertEq(e._Org, e._Sym._Org) && e._Lnext._Lnext != e)
                 {
                     // Zero-length edge, contour has at least 3 edges
 
@@ -1129,12 +1137,12 @@ namespace LibTessDotNet
             // Make sure there is enough space for sentinels.
             vertexCount += 8;
     
-            _pq = new PriorityQueue<MeshUtils.Vertex>(vertexCount, Geom.VertLeq);
+            _pq = new VertexPriorityQueue(vertexCount);
 
             vHead = _mesh._vHead;
             for( v = vHead._next; v != vHead; v = v._next ) {
                 v._pqHandle = _pq.Insert(v);
-                if (v._pqHandle._handle == PQHandle.Invalid)
+                if (v._pqHandle == PQHandle.Invalid)
                 {
                     throw new InvalidOperationException("PQHandle should not be invalid");
                 }
@@ -1144,6 +1152,7 @@ namespace LibTessDotNet
 
         private void DonePriorityQ()
         {
+            _pq.Free();
             _pq = null;
         }
 

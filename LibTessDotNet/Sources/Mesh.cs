@@ -43,8 +43,8 @@ namespace LibTessDotNet
 
         public Mesh()
         {
-            var v = _vHead = new MeshUtils.Vertex();
-            var f = _fHead = new MeshUtils.Face();
+            var v = _vHead = MeshUtils.Vertex.Create();
+            var f = _fHead = MeshUtils.Face.Create();
 
             var pair = MeshUtils.EdgePair.Create();
             var e = _eHead = pair._e;
@@ -86,9 +86,9 @@ namespace LibTessDotNet
         {
             var e = MeshUtils.MakeEdge(_eHead);
 
-            MeshUtils.MakeVertex(new MeshUtils.Vertex(), e, _vHead);
-            MeshUtils.MakeVertex(new MeshUtils.Vertex(), e._Sym, _vHead);
-            MeshUtils.MakeFace(new MeshUtils.Face(), e, _fHead);
+            MeshUtils.MakeVertex(MeshUtils.Vertex.Create(), e, _vHead);
+            MeshUtils.MakeVertex(MeshUtils.Vertex.Create(), e._Sym, _vHead);
+            MeshUtils.MakeFace(MeshUtils.Face.Create(), e, _fHead);
 
             return e;
         }
@@ -146,14 +146,14 @@ namespace LibTessDotNet
             {
                 // We split one vertex into two -- the new vertex is eDst->Org.
                 // Make sure the old vertex points to a valid half-edge.
-                MeshUtils.MakeVertex(new MeshUtils.Vertex(), eDst, eOrg._Org);
+                MeshUtils.MakeVertex(MeshUtils.Vertex.Create(), eDst, eOrg._Org);
                 eOrg._Org._anEdge = eOrg;
             }
             if (!joiningLoops)
             {
                 // We split one loop into two -- the new loop is eDst->Lface.
                 // Make sure the old face points to a valid half-edge.
-                MeshUtils.MakeFace(new MeshUtils.Face(), eDst, eOrg._Lface);
+                MeshUtils.MakeFace(MeshUtils.Face.Create(), eDst, eOrg._Lface);
                 eOrg._Lface._anEdge = eOrg;
             }
         }
@@ -195,7 +195,7 @@ namespace LibTessDotNet
                 if (!joiningLoops)
                 {
                     // We are splitting one loop into two -- create a new loop for eDel.
-                    MeshUtils.MakeFace(new MeshUtils.Face(), eDel, eDel._Lface);
+                    MeshUtils.MakeFace(MeshUtils.Face.Create(), eDel, eDel._Lface);
                 }
             }
 
@@ -232,8 +232,8 @@ namespace LibTessDotNet
             MeshUtils.Splice(eNew, eOrg._Lnext);
 
             // Set vertex and face information
-            eNew._Org = eOrg._Dst;
-            MeshUtils.MakeVertex(new MeshUtils.Vertex(), eNewSym, eNew._Org);
+            eNew._Org = eOrg._Sym._Org;
+            MeshUtils.MakeVertex(MeshUtils.Vertex.Create(), eNewSym, eNew._Org);
             eNew._Lface = eNewSym._Lface = eOrg._Lface;
 
             return eNew;
@@ -254,8 +254,8 @@ namespace LibTessDotNet
             MeshUtils.Splice(eOrg._Sym, eNew);
 
             // Set the vertex and face information
-            eOrg._Dst = eNew._Org;
-            eNew._Dst._anEdge = eNew._Sym; // may have pointed to eOrg->Sym
+            eOrg._Sym._Org = eNew._Org;
+            eNew._Sym._Org._anEdge = eNew._Sym; // may have pointed to eOrg->Sym
             eNew._Rface = eOrg._Rface;
             eNew._winding = eOrg._winding; // copy old winding information
             eNew._Sym._winding = eOrg._Sym._winding;
@@ -291,7 +291,7 @@ namespace LibTessDotNet
             MeshUtils.Splice(eNewSym, eDst);
 
             // Set the vertex and face information
-            eNew._Org = eOrg._Dst;
+            eNew._Org = eOrg._Sym._Org;
             eNewSym._Org = eDst._Org;
             eNew._Lface = eNewSym._Lface = eOrg._Lface;
 
@@ -300,7 +300,7 @@ namespace LibTessDotNet
 
             if (!joiningLoops)
             {
-                MeshUtils.MakeFace(new MeshUtils.Face(), eNew, eOrg._Lface);
+                MeshUtils.MakeFace(MeshUtils.Face.Create(), eNew, eOrg._Lface);
             }
 
             return eNew;
@@ -408,6 +408,7 @@ namespace LibTessDotNet
             }
         }
 
+        [Conditional("DEBUG")]
         public void Check()
         {
             MeshUtils.Edge e;
@@ -451,14 +452,14 @@ namespace LibTessDotNet
                 Debug.Assert(e._Sym != e);
                 Debug.Assert(e._Sym._Sym == e);
                 Debug.Assert(e._Org != null);
-                Debug.Assert(e._Dst != null);
+                Debug.Assert(e._Sym._Org != null);
                 Debug.Assert(e._Lnext._Onext._Sym == e);
                 Debug.Assert(e._Onext._Sym._Lnext == e);
             }
             Debug.Assert(e._Sym._next == ePrev._Sym
                 && e._Sym == _eHeadSym
                 && e._Sym._Sym == e
-                && e._Org == null && e._Dst == null
+                && e._Org == null && e._Sym._Org == null
                 && e._Lface == null && e._Rface == null);
         }
     }
