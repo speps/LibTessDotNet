@@ -567,8 +567,9 @@ namespace LibTessDotNet
                 vertCount = 0;
                 start = edge = f._anEdge;
                 do {
-                    _vertices[vertIndex++].Position = edge._Org._coords;
-                    _vertices[vertIndex++].Data = edge._Org._data;
+                    _vertices[vertIndex].Position = edge._Org._coords;
+                    _vertices[vertIndex].Data = edge._Org._data;
+                    ++vertIndex;
                     ++vertCount;
                     edge = edge._Lnext;
                 } while (edge != start);
