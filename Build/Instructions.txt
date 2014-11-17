@@ -1,0 +1,23 @@
+LibTess.NET - https://github.com/speps/LibTessDotNet
+
+ C# port of the famous GLU Tessellator
+
+
+Using LibTessDotNet.dll
+=======================
+
+Visual Studio
+-------------
+
+Right click on the project "References" folder, select "Add Reference". Click on "Browse" and select LibTessDotNet.dll.
+
+Unity3D
+-------
+
+Place LibTessDotNet.dll inside a "Assets\Plugins" folder. Put "using LibTessDotNet" on the top of .cs scripts or directly use the Tess class inside .js scripts.
+
+
+About TessBed.exe
+=================
+
+This program is a running example of the library and is not needed for LibTessDotNet.dll to run.
