@@ -65,9 +65,10 @@ namespace LibTessDotNet
         {
             internal int p, r;
         };
-        void Swap<T>(ref T a, ref T b)
+
+        static void Swap(ref int a, ref int b)
         {
-            T tmp = a;
+            int tmp = a;
             a = b;
             b = tmp;
         }
