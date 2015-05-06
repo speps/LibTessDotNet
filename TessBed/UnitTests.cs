@@ -35,7 +35,7 @@ namespace TessBed
         public static bool OutputTestData = false;
         public const string TestDataPath = @"..\..\TessBed\TestData";
 
-        [TestCase, TestCaseSource("GetTestCaseData")]
+        [Test, TestCaseSource("GetTestCaseData")]
         public void Tessellate_WithAsset_ReturnsExpectedTriangulation(TestCaseData data)
         {
             var pset = _loader.GetAsset(data.AssetName).Polygons;
