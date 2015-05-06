@@ -6,12 +6,16 @@ set _msbuildpath=C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe
 
 del Release\*.pdb
 
-LibZ\libz.exe inject-dll --assembly Release\TessBed.exe --include Release\Poly2Tri.dll --move
+LibZ\libz.exe inject-dll --assembly Release\TessBed.exe --include Release\Poly2Tri.dll --include Release\nunit.framework.dll --move
 
 copy Instructions.txt Release\Instructions.txt
 copy ..\LICENSE.txt Release\MITLicense.txt
 
-set /P _version=Enter version || set _version=NONE
+if "%1"=="" (
+    set /P _version=Enter version || set _version=NONE
+) else (
+    set _version=%1
+)
 if "%_version%"=="NONE" goto :error
 set _version="LibTessDotNet-%_version%"
 
