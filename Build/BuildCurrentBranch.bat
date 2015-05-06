@@ -15,8 +15,10 @@ copy ..\LICENSE.txt Release\MITLicense.txt
 
 if "%1"=="" (
     set /P _version=Enter version || set _version=NONE
-) else (
+) else if "%appveyor_build_version%" == "" (
     set _version=%1
+) else (
+    set _version=%appveyor_build_version%
 )
 if "%_version%"=="NONE" goto :error
 set _version="LibTessDotNet-%_version%"
