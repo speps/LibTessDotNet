@@ -36,6 +36,9 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="nunit.framework">
+      <HintPath>Externals\NUnit\nunit.framework.dll</HintPath>
+    </Reference>
     <Reference Include="Poly2Tri">
       <HintPath>Externals\Poly2Tri\Poly2Tri.dll</HintPath>
     </Reference>
@@ -62,8 +65,10 @@
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="PolyConvert.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UnitTests.cs" />
     <EmbeddedResource Include="BenchForm.resx">
       <DependentUpon>BenchForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -108,6 +113,26 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <EmbeddedResource Include="TestData\2.testdat" />
+    <EmbeddedResource Include="TestData\bird.testdat" />
+    <EmbeddedResource Include="TestData\clipper.testdat" />
+    <EmbeddedResource Include="TestData\custom.testdat" />
+    <EmbeddedResource Include="TestData\debug.testdat" />
+    <EmbeddedResource Include="TestData\debug2.testdat" />
+    <EmbeddedResource Include="TestData\diamond.testdat" />
+    <EmbeddedResource Include="TestData\dude.testdat" />
+    <EmbeddedResource Include="TestData\force-winding.testdat" />
+    <EmbeddedResource Include="TestData\funny.testdat" />
+    <EmbeddedResource Include="TestData\letterE.testdat" />
+    <EmbeddedResource Include="TestData\nazca_heron.testdat" />
+    <EmbeddedResource Include="TestData\nazca_monkey.testdat" />
+    <EmbeddedResource Include="TestData\redbook-winding.testdat" />
+    <EmbeddedResource Include="TestData\sketchup.testdat" />
+    <EmbeddedResource Include="TestData\star-intersect.testdat" />
+    <EmbeddedResource Include="TestData\star.testdat" />
+    <EmbeddedResource Include="TestData\strange.testdat" />
+    <EmbeddedResource Include="TestData\tank.testdat" />
+    <EmbeddedResource Include="TestData\test.testdat" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

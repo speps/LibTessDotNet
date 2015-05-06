@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using LibTessDotNet;
 
@@ -43,7 +44,7 @@ namespace TessBed
             public PolygonSet Polygons;
         }
 
-        public PolygonSet LoadDat(Stream fileStream)
+        public PolygonSet LoadDat(Stream resourceStream)
         {
             var points = new List<PolygonPoint>();
             var polys = new PolygonSet();
@@ -51,7 +52,7 @@ namespace TessBed
             string line;
             Color currentColor = Color.White;
             ContourOrientation currentOrientation = ContourOrientation.Original;
-            using (var stream = new StreamReader(fileStream))
+            using (var stream = new StreamReader(resourceStream))
             {
                 while ((line = stream.ReadLine()) != null)
                 {
@@ -159,13 +160,10 @@ namespace TessBed
         {
             foreach (var name in Assembly.GetExecutingAssembly().GetManifestResourceNames())
             {
-                var s = name.Split('.');
-                if (s != null && s.Length > 0)
+                var ext = Path.GetExtension(name);
+                if (ext == ".dat")
                 {
-                    if (s[s.Length - 1] == "dat")
-                    {
-                        _assets.Add(s[s.Length - 2], new Asset { Name = name });
-                    }
+                    _assets.Add(name.Split('.').Reverse().Skip(1).FirstOrDefault(), new Asset { Name = name });
                 }
             }
         }

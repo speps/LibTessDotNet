@@ -34,14 +34,14 @@ namespace TessBed
             new Lib { Name = "Poly2Tri", Triangulate = (pset, loops) => {
                 var result = new LibResult();
                 // Output
-                var rpset = ToP2T(pset);
+                var rpset = PolyConvert.ToP2T(pset);
                 Poly2Tri.P2T.Triangulate(rpset);
-                result.Output = FromP2T(rpset);
+                result.Output = PolyConvert.FromP2T(rpset);
                 // Time
                 var sw = new Stopwatch();
                 for (int i = 0; i < loops; i++)
                 {
-                    rpset = ToP2T(pset);
+                    rpset = PolyConvert.ToP2T(pset);
                     sw.Start();
                     Poly2Tri.P2T.Triangulate(rpset);
                     sw.Stop();
@@ -54,15 +54,15 @@ namespace TessBed
                 var result = new LibResult();
                 var tess = new Tess();
                 // Output
-                ToTess(pset, tess);
+                PolyConvert.ToTess(pset, tess);
                 tess.Tessellate(WindingRule.EvenOdd, ElementType.Polygons, 3);
-                result.Output = FromTess(tess);
+                result.Output = PolyConvert.FromTess(tess);
                 // Time
                 var sw = new Stopwatch();
                 for (int i = 0; i < loops; i++)
                 {
                     sw.Start();
-                    ToTess(pset, tess);
+                    PolyConvert.ToTess(pset, tess);
                     tess.Tessellate(WindingRule.EvenOdd, ElementType.Polygons, 3);
                     sw.Stop();
                 }
@@ -157,72 +157,6 @@ namespace TessBed
             data.Invalidate();
 
             Invoke(new Action(() => { toolStripButtonStart.Enabled = true; }));
-        }
-
-        private static Poly2Tri.PolygonSet ToP2T(PolygonSet pset)
-        {
-            var rpset = new Poly2Tri.PolygonSet();
-            foreach (var poly in pset)
-            {
-                var pts = new List<Poly2Tri.PolygonPoint>();
-                foreach (var p in poly)
-                    pts.Add(new Poly2Tri.PolygonPoint(p.X, p.Y));
-                rpset.Add(new Poly2Tri.Polygon(pts));
-            }
-            return rpset;
-        }
-
-        private static PolygonSet FromP2T(Poly2Tri.PolygonSet pset)
-        {
-            var result = new PolygonSet();
-            foreach (var poly in pset.Polygons)
-            {
-                foreach (var tri in poly.Triangles)
-                {
-                    var rtri = new Polygon();
-                    rtri.Add(new PolygonPoint { X = tri.Points[0].Xf, Y = tri.Points[0].Yf });
-                    rtri.Add(new PolygonPoint { X = tri.Points[1].Xf, Y = tri.Points[1].Yf });
-                    rtri.Add(new PolygonPoint { X = tri.Points[2].Xf, Y = tri.Points[2].Yf });
-                    result.Add(rtri);
-                }
-            }
-            return result;
-        }
-
-        private static void ToTess(PolygonSet pset, Tess tess)
-        {
-            foreach (var poly in pset)
-            {
-                var v = new ContourVertex[poly.Count];
-                for (int i = 0; i < poly.Count; i++)
-                {
-                    v[i].Position = new Vec3 { X = poly[i].X, Y = poly[i].Y };
-                    v[i].Data = poly[i].Color;
-                }
-                tess.AddContour(v, poly.Orientation);
-            }
-        }
-
-        private static PolygonSet FromTess(Tess tess)
-        {
-            var output = new PolygonSet();
-            for (int i = 0; i < tess.ElementCount; i++)
-            {
-                var poly = new Polygon();
-                for (int j = 0; j < 3; j++)
-                {
-                    int index = tess.Elements[i * 3 + j];
-                    if (index == -1)
-                        continue;
-                    var v = new PolygonPoint {
-                        X = tess.Vertices[index].Position.X,
-                        Y = tess.Vertices[index].Position.Y
-                    };
-                    poly.Add(v);
-                }
-                output.Add(poly);
-            }
-            return output;
         }
 
         private void toolStripTextLoops_TextChanged(object sender, EventArgs e)
