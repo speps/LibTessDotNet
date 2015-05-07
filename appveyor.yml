@@ -9,5 +9,5 @@ deploy:
   release: LibTessDotNet v$(appveyor_build_version)
   auth_token:
     secure: oem7YkVVt18oZgBD9RoA1p7B+HdFh+j7De87gzwIorUgnqNmUlwrWuMNS2jguUBp
-  artifact: Build\LibTessDotNet-v$(appveyor_build_version).zip
+  artifact: Build\LibTessDotNet-v{version}.zip
   draft: true
