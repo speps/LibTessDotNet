@@ -1,6 +1,5 @@
 @echo off
 setlocal
-set
 set _currentpath=%~dp0
 pushd "%_currentpath%"
 set _msbuildpath=C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe
@@ -14,12 +13,12 @@ LibZ\libz.exe inject-dll --assembly Release\TessBed.exe --include Release\Poly2T
 copy Instructions.txt Release\Instructions.txt
 copy ..\LICENSE.txt Release\MITLicense.txt
 
-if "%1"=="" (
-    set /P _version=Enter version || set _version=NONE
-) else if "%appveyor_build_version%" == "" (
+if "%1" != "" (
     set _version=%1
-) else (
+) else if "%appveyor_build_version%" != "" (
     set _version=%appveyor_build_version%
+) else (
+    set /P _version=Enter version || set _version=NONE
 )
 if "%_version%"=="NONE" goto :error
 set _version="LibTessDotNet-%_version%"
