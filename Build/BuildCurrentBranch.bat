@@ -1,5 +1,6 @@
 @echo off
 setlocal
+set
 set _currentpath=%~dp0
 pushd "%_currentpath%"
 set _msbuildpath=C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe
