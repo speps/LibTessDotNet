@@ -13,9 +13,9 @@ LibZ\libz.exe inject-dll --assembly Release\TessBed.exe --include Release\Poly2T
 copy Instructions.txt Release\Instructions.txt
 copy ..\LICENSE.txt Release\MITLicense.txt
 
-if "%1" != "" (
+if not "%1" == "" (
     set _version=%1
-) else if "%appveyor_build_version%" != "" (
+) else if not "%appveyor_build_version%" == "" (
     set _version=%appveyor_build_version%
 ) else (
     set /P _version=Enter version || set _version=NONE
