@@ -3,11 +3,14 @@ build:
   verbosity: minimal
 before_deploy:
 - call Build\BuildCurrentBranch.bat
+artifacts:
+- path: Build\LibTessDotNet-v{version}.zip
+  name: LibTessDotNet
 deploy:
 - provider: GitHub
   tag: v$(appveyor_build_version)
   release: LibTessDotNet v$(appveyor_build_version)
   auth_token:
     secure: oem7YkVVt18oZgBD9RoA1p7B+HdFh+j7De87gzwIorUgnqNmUlwrWuMNS2jguUBp
-  artifact: Build\LibTessDotNet-v{version}.zip
+  artifact: LibTessDotNet
   draft: true
