@@ -1,7 +1,7 @@
 version: 1.0.{build}
 build:
   verbosity: minimal
-before_deploy:
+after_build:
 - call Build\BuildCurrentBranch.bat
 artifacts:
 - path: Build\LibTessDotNet-v{version}.zip
