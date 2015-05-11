@@ -11,7 +11,7 @@ assembly_info:
 after_test:
 - call Build\PackageCurrentBranch.bat
 artifacts:
-- path: 'Build\LibTessDotNet-v{version}.zip'
+- path: '$(appveyor_build_folder)\Build\LibTessDotNet-v{version}.zip'
   name: LibTessDotNet
 deploy:
 - provider: GitHub
