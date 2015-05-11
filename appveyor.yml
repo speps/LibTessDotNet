@@ -8,7 +8,7 @@ assembly_info:
   file: LibTessDotNet\Properties\AssemblyInfo.cs
   assembly_version: $(appveyor_build_version)
   assembly_file_version: $(appveyor_build_version)
-on_success:
+before_deploy:
 - call Build\PackageCurrentBranch.bat
 artifacts:
 - path: Build\LibTessDotNet-v{version}.zip
