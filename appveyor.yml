@@ -11,15 +11,15 @@ assembly_info:
 after_test:
 - call Build\PackageCurrentBranch.bat
 artifacts:
-- path: '$(appveyor_build_folder)\Build\LibTessDotNet-v{version}.zip'
+- path: Build\LibTessDotNet-v$(appveyor_build_version).zip
   name: LibTessDotNet
-deploy:
-- provider: GitHub
-  tag: v$(appveyor_build_version)
-  release: LibTessDotNet v$(appveyor_build_version)
-  auth_token:
-    secure: oem7YkVVt18oZgBD9RoA1p7B+HdFh+j7De87gzwIorUgnqNmUlwrWuMNS2jguUBp
-  artifact: LibTessDotNet
-  draft: true
-  on:
-    branch: master
+# deploy:
+# - provider: GitHub
+#   tag: v$(appveyor_build_version)
+#   release: LibTessDotNet v$(appveyor_build_version)
+#   auth_token:
+#     secure: oem7YkVVt18oZgBD9RoA1p7B+HdFh+j7De87gzwIorUgnqNmUlwrWuMNS2jguUBp
+#   artifact: LibTessDotNet
+#   draft: true
+#   on:
+#     branch: master
