@@ -9,10 +9,10 @@ assembly_info:
   assembly_version: $(appveyor_build_version)
   assembly_file_version: $(appveyor_build_version)
 after_test:
-- call Build\PackageCurrentBranch.bat
+  - call Build\PackageCurrentBranch.bat
 artifacts:
-- path: Build\LibTessDotNet-v$(appveyor_build_version).zip
-  name: LibTessDotNet
+  - path: Build\LibTessDotNet-v$(appveyor_build_version).zip
+    name: LibTessDotNet
 # deploy:
 # - provider: GitHub
 #   tag: v$(appveyor_build_version)
