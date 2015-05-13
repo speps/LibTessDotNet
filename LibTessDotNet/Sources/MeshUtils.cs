@@ -78,6 +78,7 @@ namespace LibTessDotNet
         {
             dot = u.X * v.X + u.Y * v.Y + u.Z * v.Z;
         }
+
         public static void Normalize(ref Vec3 v)
         {
             float len = v.X * v.X + v.Y * v.Y + v.Z * v.Z;
@@ -87,12 +88,18 @@ namespace LibTessDotNet
             v.Y *= len;
             v.Z *= len;
         }
+
         public static int LongAxis(ref Vec3 v)
         {
             int i = 0;
             if (Math.Abs(v.Y) > Math.Abs(v.X)) i = 1;
             if (Math.Abs(v.Z) > Math.Abs(i == 0 ? v.X : v.Y)) i = 2;
             return i;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0}, {1}, {2}", X, Y, Z);
         }
     }
 

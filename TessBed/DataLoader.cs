@@ -6,12 +6,14 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using LibTessDotNet;
+using System.Diagnostics;
 
 namespace TessBed
 {
+    [DebuggerDisplay("{X}, {Y}, {Z}")]
     public struct PolygonPoint
     {
-        public float X, Y;
+        public float X, Y, Z;
         public Color Color;
     }
 
@@ -44,7 +46,7 @@ namespace TessBed
             public PolygonSet Polygons;
         }
 
-        public PolygonSet LoadDat(Stream resourceStream)
+        public static PolygonSet LoadDat(Stream resourceStream)
         {
             var points = new List<PolygonPoint>();
             var polys = new PolygonSet();
@@ -117,14 +119,14 @@ namespace TessBed
                     }
                     else
                     {
-                        float x, y;
-                        var xy = line.Split(new[] { ' ', ',', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-                        if (xy != null &&
-                            xy.Length >= 2 &&
-                            float.TryParse(xy[0], NumberStyles.Float, CultureInfo.InvariantCulture, out x) &&
-                            float.TryParse(xy[1], NumberStyles.Float, CultureInfo.InvariantCulture, out y))
+                        float x = 0, y = 0, z = 0;
+                        var xyz = line.Split(new[] { ' ', ',', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+                        if (xyz != null)
                         {
-                            points.Add(new PolygonPoint { X = x, Y = y, Color = currentColor });
+                            if (xyz.Length >= 1) float.TryParse(xyz[0], NumberStyles.Float, CultureInfo.InvariantCulture, out x);
+                            if (xyz.Length >= 2) float.TryParse(xyz[1], NumberStyles.Float, CultureInfo.InvariantCulture, out y);
+                            if (xyz.Length >= 3) float.TryParse(xyz[2], NumberStyles.Float, CultureInfo.InvariantCulture, out z);
+                            points.Add(new PolygonPoint { X = x, Y = y, Z = z, Color = currentColor });
                         }
                         else
                         {

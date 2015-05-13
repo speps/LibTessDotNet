@@ -32,8 +32,22 @@ namespace TessBed
             public int[] Indices;
         }
 
-        public static bool OutputTestData = false;
+        public bool OutputTestData = false;
         public const string TestDataPath = @"..\..\TessBed\TestData";
+
+        [Test, Ignore]
+        // From https://github.com/memononen/libtess2/issues/14
+        public void Tesselate_WithThinQuad_DoesNotCrash()
+        {
+            string data = "9.5,7.5,-0.5\n9.5,2,-0.5\n9.5,2,-0.4999999701976776123\n9.5,7.5,-0.4999999701976776123";
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(data)))
+            {
+                var pset = DataLoader.LoadDat(stream);
+                var tess = new Tess();
+                PolyConvert.ToTess(pset, tess);
+                tess.Tessellate(WindingRule.EvenOdd, ElementType.Polygons, 3);
+            }
+        }
 
         [Test, TestCaseSource("GetTestCaseData")]
         public void Tessellate_WithAsset_ReturnsExpectedTriangulation(TestCaseData data)
@@ -43,45 +57,22 @@ namespace TessBed
             PolyConvert.ToTess(pset, tess);
             tess.Tessellate(data.Winding, ElementType.Polygons, data.ElementSize);
 
-            if (OutputTestData)
+            var resourceName = Assembly.GetExecutingAssembly().GetName().Name + ".TestData." + data.AssetName + ".testdat";
+            var testData = ParseTestData(data.Winding, data.ElementSize, Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName));
+            Assert.IsNotNull(testData);
+            Assert.AreEqual(testData.ElementSize, data.ElementSize);
+
+            var indices = new List<int>();
+            for (int i = 0; i < tess.ElementCount; i++)
             {
-                var lines = new List<string>();
-                var indices = new List<int>();
-
-                lines.Add(string.Format("{0} {1}", data.Winding, data.ElementSize));
-                for (int i = 0; i < tess.ElementCount; i++)
+                for (int j = 0; j < data.ElementSize; j++)
                 {
-                    indices.Clear();
-                    for (int j = 0; j < data.ElementSize; j++)
-                    {
-                        int index = tess.Elements[i * data.ElementSize + j];
-                        indices.Add(index);
-                    }
-                    lines.Add(string.Join(" ", indices));
+                    int index = tess.Elements[i * data.ElementSize + j];
+                    indices.Add(index);
                 }
-                lines.Add("");
-
-                File.AppendAllLines(Path.Combine(TestDataPath, data.AssetName + ".testdat"), lines);
             }
-            else
-            {
-                var resourceName = Assembly.GetExecutingAssembly().GetName().Name + ".TestData." + data.AssetName + ".testdat";
-                var testData = ParseTestData(data.Winding, data.ElementSize, Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName));
-                Assert.IsNotNull(testData);
-                Assert.AreEqual(testData.ElementSize, data.ElementSize);
-                
-                var indices = new List<int>();
-                for (int i = 0; i < tess.ElementCount; i++)
-                {
-                    for (int j = 0; j < data.ElementSize; j++)
-                    {
-                        int index = tess.Elements[i * data.ElementSize + j];
-                        indices.Add(index);
-                    }
-                }
 
-                Assert.AreEqual(testData.Indices, indices.ToArray());
-            }
+            Assert.AreEqual(testData.Indices, indices.ToArray());
         }
 
         public TestData ParseTestData(WindingRule winding, int elementSize, Stream resourceStream)
@@ -134,7 +125,43 @@ namespace TessBed
             return null;
         }
 
-        static TestCaseData[] GetTestCaseData()
+        public static void GenerateTestData()
+        {
+            var cases = UnitTests.GetTestCaseData();
+            var tests = new UnitTests();
+            tests.OutputTestData = true;
+            foreach (var name in _loader.AssetNames)
+            {
+                var pset = _loader.GetAsset(name).Polygons;
+
+                var lines = new List<string>();
+                var indices = new List<int>();
+
+                foreach (WindingRule winding in Enum.GetValues(typeof(WindingRule)))
+                {
+                    var tess = new Tess();
+                    PolyConvert.ToTess(pset, tess);
+                    tess.Tessellate(winding, ElementType.Polygons, 3);
+
+                    lines.Add(string.Format("{0} {1}", winding, 3));
+                    for (int i = 0; i < tess.ElementCount; i++)
+                    {
+                        indices.Clear();
+                        for (int j = 0; j < 3; j++)
+                        {
+                            int index = tess.Elements[i * 3 + j];
+                            indices.Add(index);
+                        }
+                        lines.Add(string.Join(" ", indices));
+                    }
+                    lines.Add("");
+                }
+
+                File.WriteAllLines(Path.Combine(TestDataPath, name + ".testdat"), lines);
+            }
+        }
+
+        public static TestCaseData[] GetTestCaseData()
         {
             var data = new List<TestCaseData>();
             foreach (WindingRule winding in Enum.GetValues(typeof(WindingRule)))
