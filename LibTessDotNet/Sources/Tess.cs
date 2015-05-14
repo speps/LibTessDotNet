@@ -97,6 +97,7 @@ namespace LibTessDotNet
 
         public float SUnitX = 1.0f;
         public float SUnitY = 0.0f;
+        public float SentinelCoord = 4e30f;
 
         public ContourVertex[] Vertices { get { return _vertices; } }
         public int VertexCount { get { return _vertexCount; } }

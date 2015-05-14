@@ -35,7 +35,7 @@ namespace TessBed
         public bool OutputTestData = false;
         public const string TestDataPath = @"..\..\TessBed\TestData";
 
-        [Test, Ignore]
+        [Test]
         // From https://github.com/memononen/libtess2/issues/14
         public void Tesselate_WithThinQuad_DoesNotCrash()
         {

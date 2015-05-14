@@ -1037,16 +1037,8 @@ namespace LibTessDotNet
         {
             _dict = new Dict<ActiveRegion>(EdgeLeq);
 
-            var w = _bmaxX - _bminX;
-            var h = _bmaxY - _bminY;
-
-            var smin = _bminX - w;
-            var smax = _bmaxX + w;
-            var tmin = _bminY - h;
-            var tmax = _bmaxY + h;
-
-            AddSentinel(smin, smax, tmin);
-            AddSentinel(smin, smax, tmax);
+            AddSentinel(-SentinelCoord, SentinelCoord, -SentinelCoord);
+            AddSentinel(-SentinelCoord, SentinelCoord, +SentinelCoord);
         }
 
         private void DoneEdgeDict()
