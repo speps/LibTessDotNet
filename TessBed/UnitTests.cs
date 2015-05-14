@@ -35,6 +35,35 @@ namespace TessBed
         public bool OutputTestData = false;
         public const string TestDataPath = @"..\..\TessBed\TestData";
 
+
+        [Test]
+        public void Tesselate_WithSingleTriangle_ProducesSameTriangle()
+        {
+            string data = "0,0,0\n0,1,0\n1,1,0";
+            var indices = new List<int>();
+            var expectedIndices = new int[] { 0, 1, 2 };
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(data)))
+            {
+                var pset = DataLoader.LoadDat(stream);
+                var tess = new Tess();
+
+                PolyConvert.ToTess(pset, tess);
+                tess.Tessellate(WindingRule.EvenOdd, ElementType.Polygons, 3);
+
+                indices.Clear();
+                for (int i = 0; i < tess.ElementCount; i++)
+                {
+                    for (int j = 0; j < 3; j++)
+                    {
+                        int index = tess.Elements[i * 3 + j];
+                        indices.Add(index);
+                    }
+                }
+
+                Assert.AreEqual(expectedIndices, indices.ToArray());
+            }
+        }
+
         [Test]
         // From https://github.com/memononen/libtess2/issues/14
         public void Tesselate_WithThinQuad_DoesNotCrash()
@@ -46,6 +75,51 @@ namespace TessBed
                 var tess = new Tess();
                 PolyConvert.ToTess(pset, tess);
                 tess.Tessellate(WindingRule.EvenOdd, ElementType.Polygons, 3);
+            }
+        }
+
+        [Test]
+        public void Tesselate_CalledTwiceOnSameInstance_DoesNotCrash()
+        {
+            string data = "0,0,0\n0,1,0\n1,1,0";
+            var indices = new List<int>();
+            var expectedIndices = new int[] { 0, 1, 2 };
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(data)))
+            {
+                var pset = DataLoader.LoadDat(stream);
+                var tess = new Tess();
+
+                // Call once
+                PolyConvert.ToTess(pset, tess);
+                tess.Tessellate(WindingRule.EvenOdd, ElementType.Polygons, 3);
+
+                indices.Clear();
+                for (int i = 0; i < tess.ElementCount; i++)
+                {
+                    for (int j = 0; j < 3; j++)
+                    {
+                        int index = tess.Elements[i * 3 + j];
+                        indices.Add(index);
+                    }
+                }
+
+                Assert.AreEqual(expectedIndices, indices.ToArray());
+
+                // Call twice
+                PolyConvert.ToTess(pset, tess);
+                tess.Tessellate(WindingRule.EvenOdd, ElementType.Polygons, 3);
+
+                indices.Clear();
+                for (int i = 0; i < tess.ElementCount; i++)
+                {
+                    for (int j = 0; j < 3; j++)
+                    {
+                        int index = tess.Elements[i * 3 + j];
+                        indices.Add(index);
+                    }
+                }
+
+                Assert.AreEqual(expectedIndices, indices.ToArray());
             }
         }
 
