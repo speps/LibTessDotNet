@@ -201,9 +201,6 @@ namespace TessBed
 
         public static void GenerateTestData()
         {
-            var cases = UnitTests.GetTestCaseData();
-            var tests = new UnitTests();
-            tests.OutputTestData = true;
             foreach (var name in _loader.AssetNames)
             {
                 var pset = _loader.GetAsset(name).Polygons;
