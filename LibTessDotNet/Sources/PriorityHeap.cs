@@ -36,13 +36,13 @@ using System.Diagnostics;
 
 namespace LibTessDotNet
 {
-    public struct PQHandle
+    internal struct PQHandle
     {
         public static readonly int Invalid = 0x0fffffff;
         internal int _handle;
     }
 
-    public class PriorityHeap<TValue> where TValue : class
+    internal class PriorityHeap<TValue> where TValue : class
     {
         public delegate bool LessOrEqual(TValue lhs, TValue rhs);
 
