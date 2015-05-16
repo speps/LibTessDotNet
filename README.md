@@ -1,4 +1,4 @@
-LibTessDotNet [![Build Status](https://ci.appveyor.com/api/projects/status/32r7s2skrgm9ubva?svg=true)](https://ci.appveyor.com/project/speps/libtessdotnet)
+LibTessDotNet [![Build Status](https://ci.appveyor.com/api/projects/status/ypuw4wca67vr5k8u?svg=true)](https://ci.appveyor.com/project/speps/libtessdotnet)
 =============
 
 ### Goal
