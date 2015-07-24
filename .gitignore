@@ -27,4 +27,6 @@
 obj/
 bin/
 packages/
+Build/Debug
+Build/Release
 Work/
