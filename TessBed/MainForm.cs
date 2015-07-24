@@ -42,7 +42,10 @@ namespace TessBed
             }
             toolStripWinding.SelectedIndexChanged += delegate(object sender, EventArgs e) {
                 _windingRule = (WindingRule)toolStripWinding.SelectedIndex;
-                RefreshAsset(toolStripAssets.SelectedIndex);
+                if (toolStripAssets.SelectedIndex >= 0)
+                {
+                    RefreshAsset(toolStripAssets.SelectedIndex);
+                }
             };
 
             toolStripPolySize.KeyDown += delegate(object sender, KeyEventArgs e)
@@ -61,13 +64,19 @@ namespace TessBed
             {
                 _canvas.ShowInput = toolStripButtonShowInput.Checked;
                 toolStripButtonShowWinding.Enabled = _canvas.ShowInput;
-                RefreshAsset(toolStripAssets.SelectedIndex);
+                if (toolStripAssets.SelectedIndex >= 0)
+                {
+                    RefreshAsset(toolStripAssets.SelectedIndex);
+                }
             };
 
             toolStripButtonShowWinding.CheckedChanged += delegate(object sender, EventArgs e)
             {
                 _canvas.ShowWinding = toolStripButtonShowWinding.Checked;
-                RefreshAsset(toolStripAssets.SelectedIndex);
+                if (toolStripAssets.SelectedIndex >= 0)
+                {
+                    RefreshAsset(toolStripAssets.SelectedIndex);
+                }
             };
 
             toolStripButtonBench.Click += delegate(object sender, EventArgs e)

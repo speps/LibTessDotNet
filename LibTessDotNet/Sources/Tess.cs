@@ -65,12 +65,11 @@ namespace LibTessDotNet
         public Vector3 Position;
         public object Data;
 
-        public ContourVertex(Vector3 pos, object data = null)
+        public override string ToString()
         {
-            Position = pos;
-            Data = data;
-        }
-     }
+            return string.Format("{0}, {1}", Position, Data);
+    }
+    }
 
     public delegate object CombineCallback(Vector3 position, object[] data, float[] weights);
 
@@ -99,7 +98,8 @@ namespace LibTessDotNet
         public Vector3 Normal { get { return _normal; } set { _normal = value; } }
 
         public float SUnitX = 1.0f;
-        public float SUnitY = 1.0f;
+        public float SUnitY = 0.0f;
+        public float SentinelCoord = 4e30f;
 
         public ContourVertex[] Vertices { get { return _vertices; } }
         public int VertexCount { get { return _vertexCount; } }

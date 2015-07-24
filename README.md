@@ -1,4 +1,4 @@
-LibTessDotNet
+LibTessDotNet [![Build Status](https://ci.appveyor.com/api/projects/status/ypuw4wca67vr5k8u?svg=true)](https://ci.appveyor.com/project/speps/libtessdotnet)
 =============
 
 ### Goal
@@ -47,7 +47,7 @@ More information in LICENSE.txt.
 
 ### Links
 * [Reference implementation](http://oss.sgi.com/projects/ogl-sample) - the original SGI reference implementation
-* [libtess2](http://code.google.com/p/libtess2/) - Mikko Mononen cleaned up the original GLU tesselator
+* [libtess2](https://github.com/memononen/libtess2) - Mikko Mononen cleaned up the original GLU tesselator
 * [Poly2Tri](http://code.google.com/p/poly2tri/) - another triangulation library for .NET (other ports also available)
     - Does not support polygons from Clipper, more specifically vertices with same coordinates (coincident)
 * [Clipper](http://www.angusj.com/delphi/clipper.php) - an open source freeware polygon clipping library

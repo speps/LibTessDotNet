@@ -1,0 +1,16 @@
+version: 1.0.{build}
+build:
+  verbosity: minimal
+  project: LibTessDotNet.sln
+configuration: Release
+assembly_info:
+  patch: true
+  file: LibTessDotNet\Properties\AssemblyInfo.cs
+  assembly_version: $(appveyor_build_version)
+  assembly_file_version: $(appveyor_build_version)
+skip_tags: true
+after_test:
+- call Build\PackageCurrentBranch.bat
+artifacts:
+- path: Build\LibTessDotNet*.zip
+  name: LibTessDotNet

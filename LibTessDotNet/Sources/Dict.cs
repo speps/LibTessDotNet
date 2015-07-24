@@ -33,7 +33,7 @@
 
 namespace LibTessDotNet
 {
-    public class Dict<TValue> where TValue : class
+    internal class Dict<TValue> where TValue : class
     {
         public class Node
         {

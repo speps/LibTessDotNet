@@ -26,5 +26,5 @@
 *.orig
 obj/
 bin/
-Build/
 packages/
+Work/
