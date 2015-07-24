@@ -25,3 +25,6 @@
 *.xcuserdatad
 *.orig
 obj/
+bin/
+Build/
+packages/

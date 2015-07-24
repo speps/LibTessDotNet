@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Diagnostics;
+using System.Numerics;
 using LibTessDotNet;
 
 namespace TessBed
@@ -31,7 +32,7 @@ namespace TessBed
         }
 
         Lib[] _libs = new Lib[] {
-            new Lib { Name = "Poly2Tri", Triangulate = (pset, loops) => {
+            /*new Lib { Name = "Poly2Tri", Triangulate = (pset, loops) => {
                 var result = new LibResult();
                 // Output
                 var rpset = ToP2T(pset);
@@ -49,7 +50,7 @@ namespace TessBed
                 result.Time = sw.Elapsed.TotalSeconds;
 
                 return result;
-            } },
+            } },*/
             new Lib { Name = "LibTessDotNet", Triangulate = (pset, loops) => {
                 var result = new LibResult();
                 var tess = new Tess();
@@ -159,7 +160,7 @@ namespace TessBed
             Invoke(new Action(() => { toolStripButtonStart.Enabled = true; }));
         }
 
-        private static Poly2Tri.PolygonSet ToP2T(PolygonSet pset)
+      /*  private static Poly2Tri.PolygonSet ToP2T(PolygonSet pset)
         {
             var rpset = new Poly2Tri.PolygonSet();
             foreach (var poly in pset)
@@ -187,7 +188,7 @@ namespace TessBed
                 }
             }
             return result;
-        }
+        }*/
 
         private static void ToTess(PolygonSet pset, Tess tess)
         {
@@ -196,7 +197,7 @@ namespace TessBed
                 var v = new ContourVertex[poly.Count];
                 for (int i = 0; i < poly.Count; i++)
                 {
-                    v[i].Position = new Vec3 { X = poly[i].X, Y = poly[i].Y };
+                    v[i].Position = new Vector3 { X = poly[i].X, Y = poly[i].Y };
                     v[i].Data = poly[i].Color;
                 }
                 tess.AddContour(v, poly.Orientation);

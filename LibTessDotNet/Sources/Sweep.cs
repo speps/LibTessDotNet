@@ -33,6 +33,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Numerics;
 
 namespace LibTessDotNet
 {
@@ -359,7 +360,7 @@ namespace LibTessDotNet
         /// </summary>
         private void GetIntersectData(MeshUtils.Vertex isect, MeshUtils.Vertex orgUp, MeshUtils.Vertex dstUp, MeshUtils.Vertex orgLo, MeshUtils.Vertex dstLo)
         {
-            isect._coords = Vec3.Zero;
+            isect._coords = Vector3.Zero;
             float w0, w1, w2, w3;
             VertexWeights(isect, orgUp, dstUp, out w0, out w1);
             VertexWeights(isect, orgLo, dstLo, out w2, out w3);
