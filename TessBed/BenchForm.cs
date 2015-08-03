@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Diagnostics;
+using System.Numerics;
 using LibTessDotNet;
 
 namespace TessBed
@@ -31,7 +32,7 @@ namespace TessBed
         }
 
         Lib[] _libs = new Lib[] {
-            new Lib { Name = "Poly2Tri", Triangulate = (pset, loops) => {
+            /*new Lib { Name = "Poly2Tri", Triangulate = (pset, loops) => {
                 var result = new LibResult();
                 // Output
                 var rpset = PolyConvert.ToP2T(pset);
@@ -49,7 +50,7 @@ namespace TessBed
                 result.Time = sw.Elapsed.TotalSeconds;
 
                 return result;
-            } },
+            } },*/
             new Lib { Name = "LibTessDotNet", Triangulate = (pset, loops) => {
                 var result = new LibResult();
                 var tess = new Tess();

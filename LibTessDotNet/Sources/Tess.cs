@@ -32,6 +32,8 @@
 */
 
 using System.Diagnostics;
+using System.Numerics;
+using static LibTessDotNet.Vector3Extensions;
 
 namespace LibTessDotNet
 {
@@ -60,23 +62,29 @@ namespace LibTessDotNet
 
     public struct ContourVertex
     {
-        public Vec3 Position;
+        public Vector3 Position;
         public object Data;
+
+        public ContourVertex(Vector3 position, object data = null)
+        {
+            Position = position;
+            Data = data;
+        }
 
         public override string ToString()
         {
             return string.Format("{0}, {1}", Position, Data);
-        }
+    }
     }
 
-    public delegate object CombineCallback(Vec3 position, object[] data, float[] weights);
+    public delegate object CombineCallback(Vector3 position, object[] data, float[] weights);
 
     public partial class Tess
     {
         private Mesh _mesh;
-        private Vec3 _normal;
-        private Vec3 _sUnit;
-        private Vec3 _tUnit;
+        private Vector3 _normal;
+        private Vector3 _sUnit;
+        private Vector3 _tUnit;
 
         private float _bminX, _bminY, _bmaxX, _bmaxY;
 
@@ -93,7 +101,7 @@ namespace LibTessDotNet
         private int[] _elements;
         private int _elementCount;
 
-        public Vec3 Normal { get { return _normal; } set { _normal = value; } }
+        public Vector3 Normal { get { return _normal; } set { _normal = value; } }
 
         public float SUnitX = 1.0f;
         public float SUnitY = 0.0f;
@@ -107,7 +115,7 @@ namespace LibTessDotNet
 
         public Tess()
         {
-            _normal = Vec3.Zero;
+            _normal = Vector3.Zero;
             _bminX = _bminY = _bmaxX = _bmaxY = 0.0f;
 
             _windingRule = WindingRule.EvenOdd;
@@ -119,14 +127,14 @@ namespace LibTessDotNet
             _elementCount = 0;
         }
 
-        private void ComputeNormal(ref Vec3 norm)
+        private void ComputeNormal(ref Vector3 norm)
         {
             var v = _mesh._vHead._next;
 
-            var minVal = new float[3] { v._coords.X, v._coords.Y, v._coords.Z };
-            var minVert = new MeshUtils.Vertex[3] { v, v, v };
-            var maxVal = new float[3] { v._coords.X, v._coords.Y, v._coords.Z };
-            var maxVert = new MeshUtils.Vertex[3] { v, v, v };
+            var minVal = new float[] { v._coords.X, v._coords.Y, v._coords.Z };
+            var minVert = new MeshUtils.Vertex[] { v, v, v };
+            var maxVal = new float[] { v._coords.X, v._coords.Y, v._coords.Z };
+            var maxVert = new MeshUtils.Vertex[] { v, v, v };
 
             for (; v != _mesh._vHead; v = v._next)
             {
@@ -146,7 +154,7 @@ namespace LibTessDotNet
             if (minVal[i] >= maxVal[i])
             {
                 // All vertices are the same -- normal doesn't matter
-                norm = new Vec3 { X = 0.0f, Y = 0.0f, Z = 1.0f };
+                norm = new Vector3(0.0f, 0.0f, 1.0f);
                 return;
             }
 
@@ -155,11 +163,11 @@ namespace LibTessDotNet
             float maxLen2 = 0.0f, tLen2;
             var v1 = minVert[i];
             var v2 = maxVert[i];
-            Vec3 d1, d2, tNorm;
-            Vec3.Sub(ref v1._coords, ref v2._coords, out d1);
+            Vector3 d1, d2, tNorm;
+            d1 = v1._coords - v2._coords;
             for (v = _mesh._vHead._next; v != _mesh._vHead; v = v._next)
             {
-                Vec3.Sub(ref v._coords, ref v2._coords, out d2);
+                d2 = v._coords - v2._coords;
                 tNorm.X = d1.Y * d2.Z - d1.Z * d2.Y;
                 tNorm.Y = d1.Z * d2.X - d1.X * d2.Z;
                 tNorm.Z = d1.X * d2.Y - d1.Y * d2.X;
@@ -174,9 +182,9 @@ namespace LibTessDotNet
             if (maxLen2 <= 0.0f)
             {
                 // All points lie on a single line -- any decent normal will do
-                norm = Vec3.Zero;
-                i = Vec3.LongAxis(ref d1);
-                norm[i] = 1.0f;
+                norm = Vector3.Zero;
+                i = d1.LongAxis();
+                SetAxis(ref norm, i, 1.0f);
             }
         }
 
@@ -204,7 +212,7 @@ namespace LibTessDotNet
                 {
                     v._t = -v._t;
                 }
-                Vec3.Neg(ref _tUnit);
+                Vector3.Negate(_tUnit);
             }
         }
 
@@ -213,28 +221,31 @@ namespace LibTessDotNet
             var norm = _normal;
 
             bool computedNormal = false;
-            if (norm.X == 0.0f && norm.Y == 0.0f && norm.Z == 0.0f)
+            if (norm == Vector3.Zero)
             {
                 ComputeNormal(ref norm);
                 computedNormal = true;
             }
 
-            int i = Vec3.LongAxis(ref norm);
+            int i = norm.LongAxis();
 
-            _sUnit[i] = 0.0f;
-            _sUnit[(i + 1) % 3] = SUnitX;
-            _sUnit[(i + 2) % 3] = SUnitY;
+            _sUnit = Vector3.Zero;
+            SetAxis(ref _sUnit, i, 0.0f);
+            SetAxis(ref _sUnit, (i + 1) % 3, SUnitX);
+            SetAxis(ref _sUnit, (i + 2) % 3, SUnitY);
 
-            _tUnit[i] = 0.0f;
-            _tUnit[(i + 1) % 3] = norm[i] > 0.0f ? -SUnitY : SUnitY;
-            _tUnit[(i + 2) % 3] = norm[i] > 0.0f ? SUnitX : -SUnitX;
+            _tUnit = Vector3.Zero;
+            SetAxis(ref _tUnit, i, 0.0f);
+            SetAxis(ref _tUnit, (i + 1) % 3, norm.GetAxis(i) > 0.0f ? -SUnitY : SUnitY);
+            SetAxis(ref _tUnit, (i + 2) % 3, norm.GetAxis(i) > 0.0f ? SUnitX : -SUnitX);
 
             // Project the vertices onto the sweep plane
             for (var v = _mesh._vHead._next; v != _mesh._vHead; v = v._next)
             {
-                Vec3.Dot(ref v._coords, ref _sUnit, out v._s);
-                Vec3.Dot(ref v._coords, ref _tUnit, out v._t);
+                v._s = Vector3.Dot(v._coords, _sUnit);
+                v._t = Vector3.Dot(v._coords, _tUnit);
             }
+
             if (computedNormal)
             {
                 CheckOrientation();

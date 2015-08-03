@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using LibTessDotNet;
 using System.Drawing;
+using System.Numerics;
 
 namespace TessBed
 {
@@ -154,7 +155,7 @@ namespace TessBed
             RefreshAsset(_assets[index]);
         }
 
-        private object VertexCombine(Vec3 position, object[] data, float[] weights)
+        private object VertexCombine(Vector3 position, object[] data, float[] weights)
         {
             var colors = new Color[] { (Color)data[0], (Color)data[1], (Color)data[2], (Color)data[3] };
             var rgba = new float[] {
@@ -172,12 +173,12 @@ namespace TessBed
 
             _sw.Reset();
 
-            foreach (var poly in asset.Polygons)
+            foreach (Polygon poly in asset.Polygons)
             {
                 var v = new ContourVertex[poly.Count];
                 for (int i = 0; i < poly.Count; i++)
                 {
-                    v[i].Position = new Vec3 { X = poly[i].X, Y = poly[i].Y };
+                    v[i].Position = new Vector3 { X = poly[i].X, Y = poly[i].Y };
                     v[i].Data = poly[i].Color;
                 }
                 _sw.Start();

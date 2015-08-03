@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
+using System.Numerics;
 using LibTessDotNet;
 
 namespace TessBed
@@ -45,7 +43,7 @@ namespace TessBed
                 var v = new ContourVertex[poly.Count];
                 for (int i = 0; i < poly.Count; i++)
                 {
-                    v[i].Position = new Vec3 { X = poly[i].X, Y = poly[i].Y, Z = poly[i].Z };
+                    v[i].Position = new Vector3(poly[i].X, poly[i].Y, poly[i].Z );
                     v[i].Data = poly[i].Color;
                 }
                 tess.AddContour(v, poly.Orientation);
