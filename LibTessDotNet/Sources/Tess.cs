@@ -65,6 +65,12 @@ namespace LibTessDotNet
         public Vector3 Position;
         public object Data;
 
+        public ContourVertex(Vector3 position, object data = null)
+        {
+            Position = position;
+            Data = data;
+        }
+
         public override string ToString()
         {
             return string.Format("{0}, {1}", Position, Data);

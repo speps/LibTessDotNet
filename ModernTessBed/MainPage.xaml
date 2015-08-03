@@ -1,0 +1,83 @@
+﻿<Page
+    x:Class="ModernTessBed.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:win2d="using:Microsoft.Graphics.Canvas.UI.Xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+
+        <!-- Adaptive triggers -->
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState>
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="720" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="RootSplitView.DisplayMode" Value="CompactInline"/>
+                        <Setter Target="RootSplitView.IsPaneOpen" Value="True"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState>
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="RootSplitView.DisplayMode" Value="Overlay"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
+        <SplitView x:Name="RootSplitView"
+                   DisplayMode="Inline"
+                   OpenPaneLength="256"
+                   IsTabStop="False">
+
+            <SplitView.Pane>
+                <StackPanel Margin="10,48,10,20">
+                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                        <ToggleButton IsChecked="{x:Bind ShowInput, Mode=TwoWay}" >Show Input</ToggleButton>
+                        <ToggleButton IsChecked="{x:Bind ShowWinding, Mode=TwoWay}" Margin="10,0,0,0">Show Winding</ToggleButton>
+                    </StackPanel>
+                    <ToggleButton IsChecked="{x:Bind ShowTessellation, Mode=TwoWay}" Margin="10,0,0,0">Show D2D Tesselation</ToggleButton>
+
+                    <TextBlock>Winding Rule:</TextBlock>
+                    <ComboBox HorizontalAlignment="Stretch"
+                              ItemsSource="{x:Bind WindingRules, Mode=OneWay}"
+                              SelectedValue="{Binding SelectedWindingRule, Mode=TwoWay}"/>
+
+                    <TextBlock Margin="0,10,0,0">Asset:</TextBlock>
+                    <ListView
+                        SelectionMode="Single"
+                        ItemsSource="{x:Bind Assets, Mode=OneWay}"
+                        SelectedValue="{Binding SelectedAsset, Mode=TwoWay}"/>
+                </StackPanel>
+            </SplitView.Pane>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                
+ 
+                <win2d:CanvasControl x:Name="_canvas"  Grid.Row="1" 
+                                     Draw="CanvasControl_OnDraw"
+                                     CreateResources="Canvas_CreateResources"/>
+
+                <Border Grid.Row="2" 
+                        HorizontalAlignment="Stretch" Padding="10,5" >   
+                    <TextBlock x:Name="_textBlockStatus" />
+                </Border>
+            </Grid>
+
+        </SplitView>
+
+    </Grid>
+</Page>

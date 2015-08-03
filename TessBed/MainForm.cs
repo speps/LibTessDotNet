@@ -173,7 +173,7 @@ namespace TessBed
 
             _sw.Reset();
 
-            foreach (var poly in asset.Polygons)
+            foreach (Polygon poly in asset.Polygons)
             {
                 var v = new ContourVertex[poly.Count];
                 for (int i = 0; i < poly.Count; i++)
