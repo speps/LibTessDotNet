@@ -26,4 +26,5 @@
 *.orig
 obj/
 Work/
-Build
+Build/Debug/
+Build/Release/
