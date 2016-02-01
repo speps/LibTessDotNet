@@ -77,7 +77,6 @@ namespace TessBed
             public List<LibResult> Libs = new List<LibResult>();
         }
 
-        List<TestResult> _results = new List<TestResult>();
         BackgroundWorker _bgWorker = new BackgroundWorker();
 
         public BenchForm()

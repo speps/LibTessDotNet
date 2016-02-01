@@ -36,9 +36,6 @@ namespace TessBed
                         {
                             var pset = loader.GetAsset(name).Polygons;
 
-                            var lines = new List<string>();
-                            var indices = new List<int>();
-
                             foreach (WindingRule winding in Enum.GetValues(typeof(WindingRule)))
                             {
                                 var tess = new Tess();
