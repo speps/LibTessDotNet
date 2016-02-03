@@ -33,7 +33,7 @@ namespace TessBed
         }
 
         public bool OutputTestData = false;
-        public const string TestDataPath = @"..\..\TessBed\TestData";
+        public static string TestDataPath = Path.Combine("..", "..", "TessBed", "TestData");
 
 
         [Test]
@@ -80,7 +80,7 @@ namespace TessBed
 
         [Test]
         // From https://github.com/speps/LibTessDotNet/issues/1
-        public void Tesselate_WithSpecificQuad_ReturnsSameResultAsLibtess2()
+        public void Tesselate_WithIssue1Quad_ReturnsSameResultAsLibtess2()
         {
             string data = "50,50\n300,50\n300,200\n50,200";
             var indices = new List<int>();

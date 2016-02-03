@@ -1,0 +1,22 @@
+EvenOdd 3
+0 1 2
+3 1 0
+3 4 1
+4 3 5
+
+NonZero 3
+0 1 2
+3 1 0
+3 4 1
+4 3 5
+
+Positive 3
+0 1 2
+3 1 0
+3 4 1
+4 3 5
+
+Negative 3
+
+AbsGeqTwo 3
+
