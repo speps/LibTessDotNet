@@ -79,6 +79,32 @@ namespace TessBed
         }
 
         [Test]
+        // From https://github.com/speps/LibTessDotNet/issues/1
+        public void Tesselate_WithSpecificQuad_ReturnsSameResultAsLibtess2()
+        {
+            string data = "50,50\n300,50\n300,200\n50,200";
+            var indices = new List<int>();
+            var expectedIndices = new int[] { 0, 1, 2, 1, 0, 3 };
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(data)))
+            {
+                var pset = DataLoader.LoadDat(stream);
+                var tess = new Tess();
+                PolyConvert.ToTess(pset, tess);
+                tess.Tessellate(WindingRule.EvenOdd, ElementType.Polygons, 3);
+                indices.Clear();
+                for (int i = 0; i < tess.ElementCount; i++)
+                {
+                    for (int j = 0; j < 3; j++)
+                    {
+                        int index = tess.Elements[i * 3 + j];
+                        indices.Add(index);
+                    }
+                }
+                Assert.AreEqual(expectedIndices, indices.ToArray());
+            }
+        }
+
+        [Test]
         public void Tesselate_CalledTwiceOnSameInstance_DoesNotCrash()
         {
             string data = "0,0,0\n0,1,0\n1,1,0";
