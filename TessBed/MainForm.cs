@@ -154,6 +154,28 @@ namespace TessBed
             RefreshAsset(_assets[index]);
         }
 
+        private Vec3 Project(Vec3 v)
+        {
+            Vec3 norm = _tess.Normal;
+            int i = Vec3.LongAxis(ref norm);
+
+            Vec3 sUnit = Vec3.Zero;
+            sUnit[i] = 0.0f;
+            sUnit[(i + 1) % 3] = _tess.SUnitX;
+            sUnit[(i + 2) % 3] = _tess.SUnitY;
+
+            Vec3 tUnit = Vec3.Zero;
+            tUnit[i] = 0.0f;
+            tUnit[(i + 1) % 3] = norm[i] > 0.0f ? -_tess.SUnitY : _tess.SUnitY;
+            tUnit[(i + 2) % 3] = norm[i] > 0.0f ? _tess.SUnitX : -_tess.SUnitX;
+
+            Vec3 result = Vec3.Zero;
+            // Project the vertices onto the sweep plane
+            Vec3.Dot(ref v, ref sUnit, out result.X);
+            Vec3.Dot(ref v, ref tUnit, out result.Y);
+            return result;
+        }
+
         private object VertexCombine(Vec3 position, object[] data, float[] weights)
         {
             var colors = new Color[] { (Color)data[0], (Color)data[1], (Color)data[2], (Color)data[3] };
@@ -177,7 +199,7 @@ namespace TessBed
                 var v = new ContourVertex[poly.Count];
                 for (int i = 0; i < poly.Count; i++)
                 {
-                    v[i].Position = new Vec3 { X = poly[i].X, Y = poly[i].Y };
+                    v[i].Position = new Vec3 { X = poly[i].X, Y = poly[i].Y, Z = poly[i].Z };
                     v[i].Data = poly[i].Color;
                 }
                 _sw.Start();
@@ -198,9 +220,10 @@ namespace TessBed
                     int index = _tess.Elements[i * _polySize + j];
                     if (index == -1)
                         continue;
+                    var proj = Project(_tess.Vertices[index].Position);
                     var v = new PolygonPoint {
-                        X = _tess.Vertices[index].Position.X,
-                        Y = _tess.Vertices[index].Position.Y,
+                        X = proj.X,
+                        Y = proj.Y,
                         Color = (Color)_tess.Vertices[index].Data
                     };
                     poly.Add(v);
@@ -208,9 +231,26 @@ namespace TessBed
                 output.Add(poly);
             }
 
+            var input = new PolygonSet();
+            foreach (var poly in asset.Polygons)
+            {
+                var projPoly = new Polygon();
+                for (int i = 0; i < poly.Count; i++)
+                {
+                    var proj = Project(new Vec3 { X = poly[i].X, Y = poly[i].Y, Z = poly[i].Z });
+                    var v = new PolygonPoint {
+                        X = proj.X,
+                        Y = proj.Y,
+                        Color = poly[i].Color
+                    };
+                    projPoly.Add(v);
+                }
+                input.Add(projPoly);
+            }
+
             statusMain.Text = string.Format("{0:F3} ms - {1} polygons (of {2} vertices) {3}", _sw.Elapsed.TotalMilliseconds, _tess.ElementCount, _polySize, _polySize == 3 ? "... triangles" : "");
 
-            _canvas.Input = asset.Polygons;
+            _canvas.Input = input;
             _canvas.Output = output;
             _canvas.Invalidate();
         }

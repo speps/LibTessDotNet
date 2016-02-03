@@ -24,6 +24,7 @@
 *.xcuserdata
 *.xcuserdatad
 *.orig
+TestResult.xml
 obj/
 Work/
 Build/Debug/

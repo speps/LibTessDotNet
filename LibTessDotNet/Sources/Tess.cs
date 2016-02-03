@@ -216,6 +216,7 @@ namespace LibTessDotNet
             if (norm.X == 0.0f && norm.Y == 0.0f && norm.Z == 0.0f)
             {
                 ComputeNormal(ref norm);
+                _normal = norm;
                 computedNormal = true;
             }
 
@@ -658,6 +659,7 @@ namespace LibTessDotNet
 
         public void Tessellate(WindingRule windingRule, ElementType elementType, int polySize, CombineCallback combineCallback)
         {
+            _normal = Vec3.Zero;
             _vertices = null;
             _elements = null;
 
