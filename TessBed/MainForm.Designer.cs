@@ -44,6 +44,7 @@
             this.toolStripButtonShowInput = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonShowWinding = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonBench = new System.Windows.Forms.ToolStripButton();
+            this.toolStripButtonOpen = new System.Windows.Forms.ToolStripButton();
             this.panel = new System.Windows.Forms.Panel();
             this.statusStrip.SuspendLayout();
             this.toolStrip.SuspendLayout();
@@ -78,7 +79,8 @@
             this.toolStripSeparator3,
             this.toolStripButtonShowInput,
             this.toolStripButtonShowWinding,
-            this.toolStripButtonBench});
+            this.toolStripButtonBench,
+            this.toolStripButtonOpen});
             this.toolStrip.Location = new System.Drawing.Point(0, 0);
             this.toolStrip.Name = "toolStrip";
             this.toolStrip.Size = new System.Drawing.Size(752, 25);
@@ -164,6 +166,16 @@
             this.toolStripButtonBench.Size = new System.Drawing.Size(76, 22);
             this.toolStripButtonBench.Text = "Benchmarks";
             // 
+            // toolStripButtonOpen
+            // 
+            this.toolStripButtonOpen.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripButtonOpen.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonOpen.Image")));
+            this.toolStripButtonOpen.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButtonOpen.Name = "toolStripButtonOpen";
+            this.toolStripButtonOpen.Size = new System.Drawing.Size(76, 22);
+            this.toolStripButtonOpen.Text = "Open";
+            this.toolStripButtonOpen.ToolTipText = "Open a .dat file";
+            // 
             // panel
             // 
             this.panel.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -210,6 +222,7 @@
         private System.Windows.Forms.ToolStripButton toolStripButtonShowWinding;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripButton toolStripButtonBench;
+        private System.Windows.Forms.ToolStripButton toolStripButtonOpen;
     }
 }
 

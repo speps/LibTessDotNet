@@ -63,24 +63,32 @@ namespace TessBed
             {
                 _canvas.ShowInput = toolStripButtonShowInput.Checked;
                 toolStripButtonShowWinding.Enabled = _canvas.ShowInput;
-                if (toolStripAssets.SelectedIndex >= 0)
-                {
-                    RefreshAsset(toolStripAssets.SelectedIndex);
-                }
+                RefreshAsset(toolStripAssets.SelectedIndex);
             };
 
             toolStripButtonShowWinding.CheckedChanged += delegate(object sender, EventArgs e)
             {
                 _canvas.ShowWinding = toolStripButtonShowWinding.Checked;
-                if (toolStripAssets.SelectedIndex >= 0)
-                {
-                    RefreshAsset(toolStripAssets.SelectedIndex);
-                }
+                RefreshAsset(toolStripAssets.SelectedIndex);
             };
 
             toolStripButtonBench.Click += delegate(object sender, EventArgs e)
             {
                 new BenchForm().ShowDialog(this);
+            };
+
+            toolStripButtonOpen.Click += delegate(object sender, EventArgs e)
+            {
+                var dialog = new OpenFileDialog();
+                dialog.Filter = "Test Files (*.dat)|*.dat|All Files (*.*)|*.*";
+                dialog.FilterIndex = 1;
+                dialog.RestoreDirectory = true;
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    var polygons = DataLoader.LoadDat(dialog.OpenFile());
+                    RefreshAsset(polygons);
+                    toolStripAssets.SelectedIndex = -1;
+                }
             };
 
             SetAsset("redbook-winding");
@@ -151,7 +159,11 @@ namespace TessBed
 
         private void RefreshAsset(int index)
         {
-            RefreshAsset(_assets[index]);
+            if (index >= 0)
+            {
+                var asset = _data.GetAsset(_assets[index]);
+                RefreshAsset(asset.Polygons);
+            }
         }
 
         private Vec3 Project(Vec3 v)
@@ -188,13 +200,11 @@ namespace TessBed
             return Color.FromArgb((int)rgba[3], (int)rgba[0], (int)rgba[1], (int)rgba[2]);
         }
 
-        private void RefreshAsset(string name)
+        private void RefreshAsset(PolygonSet polygons)
         {
-            var asset = _data.GetAsset(name);
-
             _sw.Reset();
 
-            foreach (var poly in asset.Polygons)
+            foreach (var poly in polygons)
             {
                 var v = new ContourVertex[poly.Count];
                 for (int i = 0; i < poly.Count; i++)
@@ -232,7 +242,7 @@ namespace TessBed
             }
 
             var input = new PolygonSet();
-            foreach (var poly in asset.Polygons)
+            foreach (var poly in polygons)
             {
                 var projPoly = new Polygon();
                 for (int i = 0; i < poly.Count; i++)
