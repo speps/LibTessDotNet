@@ -93,7 +93,8 @@
     <EmbeddedResource Include="Data\diamond.dat" />
     <EmbeddedResource Include="Data\dude.dat" />
     <EmbeddedResource Include="Data\funny.dat" />
-    <EmbeddedResource Include="Data\issue6.dat" />
+    <EmbeddedResource Include="Data\issue6-L.dat" />
+    <EmbeddedResource Include="Data\issue6-plus.dat" />
     <EmbeddedResource Include="Data\nazca_heron.dat" />
     <EmbeddedResource Include="Data\nazca_monkey.dat" />
     <EmbeddedResource Include="Data\sketchup.dat" />
@@ -124,7 +125,8 @@
     <EmbeddedResource Include="TestData\dude.testdat" />
     <EmbeddedResource Include="TestData\force-winding.testdat" />
     <EmbeddedResource Include="TestData\funny.testdat" />
-    <EmbeddedResource Include="TestData\issue6.testdat" />
+    <EmbeddedResource Include="TestData\issue6-L.testdat" />
+    <EmbeddedResource Include="TestData\issue6-plus.testdat" />
     <EmbeddedResource Include="TestData\letterE.testdat" />
     <EmbeddedResource Include="TestData\nazca_heron.testdat" />
     <EmbeddedResource Include="TestData\nazca_monkey.testdat" />

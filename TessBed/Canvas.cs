@@ -70,6 +70,7 @@ namespace TessBed
             using (var brushPoint = new SolidBrush(Color.FromArgb(255, 0, 0, 0)))
             using (var penOutput = new Pen(Color.FromArgb(32, 0, 0, 0), 1.0f))
             using (var penPolys = new Pen(Color.FromArgb(64, 0, 0, 0), 1.0f))
+            using (var penZeroArea = new Pen(Color.FromArgb(255, 255, 0, 0), 1.0f))
             using (var brushPolys = new SolidBrush(Color.FromArgb(64, 255, 207, 130)))
             {
                 penWinding.EndCap = LineCap.ArrowAnchor;
@@ -133,12 +134,18 @@ namespace TessBed
                     {
                         g.FillPolygon(brushPolys, pts);
                     }
+
+                    float area = SignedArea(polygon);
                     for (int i = 0; i < pts.Length; i++)
                     {
                         var p0 = pts[i];
                         var p1 = pts[(i + 1) % polygon.Count];
 
                         g.DrawLine(ShowInput ? penOutput : penPolys, p0, p1);
+                        if (Math.Abs(area) < float.Epsilon)
+                        {
+                            g.DrawLine(penZeroArea, p0, p1);
+                        }
                     }
                 }
             }
