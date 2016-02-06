@@ -31,6 +31,7 @@
 ** LibTessDotNet: Remi Gillig, https://github.com/speps/LibTessDotNet
 */
 
+using System;
 using System.Diagnostics;
 
 namespace LibTessDotNet
@@ -98,6 +99,8 @@ namespace LibTessDotNet
         public float SUnitX = 1.0f;
         public float SUnitY = 0.0f;
         public float SentinelCoord = 4e30f;
+
+        public bool NoEmptyPolygons = false;
 
         public ContourVertex[] Vertices { get { return _vertices; } }
         public int VertexCount { get { return _vertexCount; } }
@@ -187,15 +190,11 @@ namespace LibTessDotNet
             float area = 0.0f;
             for (var f = _mesh._fHead._next; f != _mesh._fHead; f = f._next)
             {
-                var e = f._anEdge;
-                if (e._winding <= 0)
+                if (f._anEdge._winding <= 0)
                 {
                     continue;
                 }
-                do {
-                    area += (e._Org._s - e._Dst._s) * (e._Org._t + e._Dst._t);
-                    e = e._Lnext;
-                } while (e != f._anEdge);
+                area += MeshUtils.FaceArea(f);
             }
             if (area < 0.0f)
             {
@@ -455,6 +454,15 @@ namespace LibTessDotNet
                 f._n = MeshUtils.Undef;
                 if (!f._inside) continue;
 
+                if (NoEmptyPolygons)
+                {
+                    float area = MeshUtils.FaceArea(f);
+                    if (Math.Abs(area) < float.Epsilon)
+                    {
+                        continue;
+                    }
+                }
+
                 edge = f._anEdge;
                 faceVerts = 0;
                 do {
@@ -499,6 +507,15 @@ namespace LibTessDotNet
             for (f = _mesh._fHead._next; f != _mesh._fHead; f = f._next)
             {
                 if (!f._inside) continue;
+
+                if (NoEmptyPolygons)
+                {
+                    float area = MeshUtils.FaceArea(f);
+                    if (Math.Abs(area) < float.Epsilon)
+                    {
+                        continue;
+                    }
+                }
 
                 // Store polygon
                 edge = f._anEdge;

@@ -72,6 +72,12 @@ namespace TessBed
                 RefreshAsset(toolStripAssets.SelectedIndex);
             };
 
+            toolStripButtonNoEmpty.CheckedChanged += delegate(object sender, EventArgs e)
+            {
+                _tess.NoEmptyPolygons = toolStripButtonNoEmpty.Checked;
+                RefreshAsset(toolStripAssets.SelectedIndex);
+            };
+
             toolStripButtonBench.Click += delegate(object sender, EventArgs e)
             {
                 new BenchForm().ShowDialog(this);

@@ -371,5 +371,20 @@ namespace LibTessDotNet
             fNext._prev = fPrev;
             fPrev._next = fNext;
         }
+
+        /// <summary>
+        /// Return signed area of face.
+        /// </summary>
+        public static float FaceArea(Face f)
+        {
+            float area = 0.0f;
+            var e = f._anEdge;
+            do
+            {
+                area += (e._Org._s - e._Dst._s) * (e._Org._t + e._Dst._t);
+                e = e._Lnext;
+            } while (e != f._anEdge);
+            return area;
+        }
     }
 }

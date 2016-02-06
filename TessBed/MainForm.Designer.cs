@@ -43,6 +43,7 @@
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripButtonShowInput = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonShowWinding = new System.Windows.Forms.ToolStripButton();
+            this.toolStripButtonNoEmpty = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonBench = new System.Windows.Forms.ToolStripButton();
             this.toolStripButtonOpen = new System.Windows.Forms.ToolStripButton();
             this.panel = new System.Windows.Forms.Panel();
@@ -79,6 +80,7 @@
             this.toolStripSeparator3,
             this.toolStripButtonShowInput,
             this.toolStripButtonShowWinding,
+            this.toolStripButtonNoEmpty,
             this.toolStripButtonBench,
             this.toolStripButtonOpen});
             this.toolStrip.Location = new System.Drawing.Point(0, 0);
@@ -157,6 +159,17 @@
             this.toolStripButtonShowWinding.Size = new System.Drawing.Size(86, 22);
             this.toolStripButtonShowWinding.Text = "Show winding";
             // 
+            // toolStripButtonNoEmpty
+            // 
+            this.toolStripButtonNoEmpty.CheckOnClick = true;
+            this.toolStripButtonNoEmpty.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripButtonNoEmpty.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonNoEmpty.Image")));
+            this.toolStripButtonNoEmpty.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButtonNoEmpty.Name = "toolStripButtonNoEmpty";
+            this.toolStripButtonNoEmpty.Size = new System.Drawing.Size(86, 22);
+            this.toolStripButtonNoEmpty.Text = "No empty";
+            this.toolStripButtonNoEmpty.ToolTipText = "Remove empty polygons";
+            // 
             // toolStripButtonBench
             // 
             this.toolStripButtonBench.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
@@ -220,6 +233,7 @@
         private System.Windows.Forms.ToolStripTextBox toolStripPolySize;
         private System.Windows.Forms.ToolStripButton toolStripButtonShowInput;
         private System.Windows.Forms.ToolStripButton toolStripButtonShowWinding;
+        private System.Windows.Forms.ToolStripButton toolStripButtonNoEmpty;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripButton toolStripButtonBench;
         private System.Windows.Forms.ToolStripButton toolStripButtonOpen;
