@@ -26,6 +26,7 @@
 *.orig
 TestResult.xml
 obj/
+.vscode/
 Work/
 Build/Debug/
 Build/Release/
