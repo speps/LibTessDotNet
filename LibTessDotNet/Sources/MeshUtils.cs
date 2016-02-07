@@ -149,10 +149,10 @@ namespace LibTessDotNet
 
             public static EdgePair Create()
             {
-                var pair = new EdgePair();
-                pair._e = new Edge();
+                var pair = new MeshUtils.EdgePair();
+                pair._e = new MeshUtils.Edge();
                 pair._e._pair = pair;
-                pair._eSym = new Edge();
+                pair._eSym = new MeshUtils.Edge();
                 pair._eSym._pair = pair;
                 return pair;
             }

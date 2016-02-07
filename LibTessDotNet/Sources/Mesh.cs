@@ -408,6 +408,7 @@ namespace LibTessDotNet
             }
         }
 
+        [Conditional("DEBUG")]
         public void Check()
         {
             MeshUtils.Edge e;

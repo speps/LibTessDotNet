@@ -84,8 +84,8 @@ namespace LibTessDotNet
         {
             Debug.Assert(VertLeq(u, v) && VertLeq(v, w));
 
-            float gapL = v._s - u._s;
-            float gapR = w._s - v._s;
+            var gapL = v._s - u._s;
+            var gapR = w._s - v._s;
 
             if (gapL + gapR > 0.0f)
             {
@@ -111,8 +111,8 @@ namespace LibTessDotNet
         {
             Debug.Assert(VertLeq(u, v) && VertLeq(v, w));
 
-            float gapL = v._s - u._s;
-            float gapR = w._s - v._s;
+            var gapL = v._s - u._s;
+            var gapR = w._s - v._s;
 
             if (gapL + gapR > 0.0f)
             {
@@ -133,8 +133,8 @@ namespace LibTessDotNet
         {
             Debug.Assert(TransLeq(u, v) && TransLeq(v, w));
 
-            float gapL = v._t - u._t;
-            float gapR = w._t - v._t;
+            var gapL = v._t - u._t;
+            var gapR = w._t - v._t;
 
             if (gapL + gapR > 0.0f)
             {
@@ -155,8 +155,8 @@ namespace LibTessDotNet
         {
             Debug.Assert(TransLeq(u, v) && TransLeq(v, w));
 
-            float gapL = v._t - u._t;
-            float gapR = w._t - v._t;
+            var gapL = v._t - u._t;
+            var gapR = w._t - v._t;
 
             if (gapL + gapR > 0.0f)
             {
@@ -212,8 +212,6 @@ namespace LibTessDotNet
         /// </summary>
         public static void EdgeIntersect(MeshUtils.Vertex o1, MeshUtils.Vertex d1, MeshUtils.Vertex o2, MeshUtils.Vertex d2, MeshUtils.Vertex v)
         {
-            float z1, z2;
-
             // This is certainly not the most efficient way to find the intersection
             // of two line segments, but it is very numerically stable.
             // 
@@ -233,8 +231,8 @@ namespace LibTessDotNet
             else if (VertLeq(d1, d2))
             {
                 // Interpolate between o2 and d1
-                z1 = EdgeEval(o1, o2, d1);
-                z2 = EdgeEval(o2, d1, d2);
+                var z1 = EdgeEval(o1, o2, d1);
+                var z2 = EdgeEval(o2, d1, d2);
                 if (z1 + z2 < 0.0f)
                 {
                     z1 = -z1;
@@ -245,8 +243,8 @@ namespace LibTessDotNet
             else
             {
                 // Interpolate between o2 and d2
-                z1 = EdgeSign(o1, o2, d1);
-                z2 = -EdgeSign(o1, d2, d1);
+                var z1 = EdgeSign(o1, o2, d1);
+                var z2 = -EdgeSign(o1, d2, d1);
                 if (z1 + z2 < 0.0f)
                 {
                     z1 = -z1;
@@ -269,8 +267,8 @@ namespace LibTessDotNet
             else if (TransLeq(d1, d2))
             {
                 // Interpolate between o2 and d1
-                z1 = TransEval(o1, o2, d1);
-                z2 = TransEval(o2, d1, d2);
+                var z1 = TransEval(o1, o2, d1);
+                var z2 = TransEval(o2, d1, d2);
                 if (z1 + z2 < 0.0f)
                 {
                     z1 = -z1;
@@ -281,8 +279,8 @@ namespace LibTessDotNet
             else
             {
                 // Interpolate between o2 and d2
-                z1 = TransSign(o1, o2, d1);
-                z2 = -TransSign(o1, d2, d1);
+                var z1 = TransSign(o1, o2, d1);
+                var z2 = -TransSign(o1, d2, d1);
                 if (z1 + z2 < 0.0f)
                 {
                     z1 = -z1;
