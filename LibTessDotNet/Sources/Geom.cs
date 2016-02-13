@@ -122,8 +122,6 @@ namespace LibTessDotNet
             return 0.0f;
         }
 
-        #region Versions of VertLeq, EdgeSign, EdgeEval with s and t transposed.
-
         public static bool TransLeq(MeshUtils.Vertex lhs, MeshUtils.Vertex rhs)
         {
             return (lhs._t < rhs._t) || (lhs._t == rhs._t && lhs._s <= rhs._s);
@@ -165,8 +163,6 @@ namespace LibTessDotNet
             /* vertical line */
             return 0.0f;
         }
-
-        #endregion
 
         public static bool EdgeGoesLeft(MeshUtils.Edge e)
         {
