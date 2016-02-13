@@ -32,6 +32,7 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace LibTessDotNet
@@ -107,7 +108,35 @@ namespace LibTessDotNet
     {
         public const int Undef = ~0;
 
-        public class Vertex
+        public abstract class Pooled<T> where T : Pooled<T>, new()
+        {
+            private static Stack<T> _stack;
+
+            public abstract void Reset();
+            public virtual void OnFree() {}
+
+            public static T Create()
+            {
+                if (_stack != null && _stack.Count > 0)
+                {
+                    return _stack.Pop();
+                }
+                return new T();
+            }
+
+            public void Free()
+            {
+                OnFree();
+                Reset();
+                if (_stack == null)
+                {
+                    _stack = new Stack<T>();
+                }
+                _stack.Push((T)this);
+            }
+        }
+
+        public class Vertex : Pooled<Vertex>
         {
             internal Vertex _prev, _next;
             internal Edge _anEdge;
@@ -117,9 +146,21 @@ namespace LibTessDotNet
             internal PQHandle _pqHandle;
             internal int _n;
             internal object _data;
+
+            public override void Reset()
+            {
+                _prev = _next = null;
+                _anEdge = null;
+                _coords = Vec3.Zero;
+                _s = 0;
+                _t = 0;
+                _pqHandle = new PQHandle();
+                _n = 0;
+                _data = null;
+            }
         }
 
-        public class Face
+        public class Face : Pooled<Face>
         {
             internal Face _prev, _next;
             internal Edge _anEdge;
@@ -141,6 +182,16 @@ namespace LibTessDotNet
                     return n;
                 }
             }
+
+            public override void Reset()
+            {
+                _prev = _next = null;
+                _anEdge = null;
+                _trail = null;
+                _n = 0;
+                _marked = false;
+                _inside = false;
+            }
         }
 
         public struct EdgePair
@@ -150,15 +201,20 @@ namespace LibTessDotNet
             public static EdgePair Create()
             {
                 var pair = new MeshUtils.EdgePair();
-                pair._e = new MeshUtils.Edge();
+                pair._e = MeshUtils.Edge.Create();
                 pair._e._pair = pair;
-                pair._eSym = new MeshUtils.Edge();
+                pair._eSym = MeshUtils.Edge.Create();
                 pair._eSym._pair = pair;
                 return pair;
             }
+
+            public void Reset()
+            {
+                _e = _eSym = null;
+            }
         }
 
-        public class Edge
+        public class Edge : Pooled<Edge>
         {
             internal EdgePair _pair;
             internal Edge _next, _Sym, _Onext, _Lnext;
@@ -177,14 +233,22 @@ namespace LibTessDotNet
             internal Edge _Dnext { get { return _Rprev._Sym; } set { _Rprev._Sym = value; } }
             internal Edge _Rnext { get { return _Oprev._Sym; } set { _Oprev._Sym = value; } }
 
-            internal Edge() { }
-
             internal static void EnsureFirst(ref Edge e)
             {
                 if (e == e._pair._eSym)
                 {
                     e = e._Sym;
                 }
+            }
+
+            public override void Reset()
+            {
+                _pair.Reset();
+                _next = _Sym = _Onext = _Lnext = null;
+                _Org = null;
+                _Lface = null;
+                _activeRegion = null;
+                _winding = 0;
             }
         }
 
@@ -326,6 +390,8 @@ namespace LibTessDotNet
             var ePrev = eDel._Sym._next;
             eNext._Sym._next = ePrev;
             ePrev._Sym._next = eNext;
+
+            eDel.Free();
         }
 
         /// <summary>
@@ -348,6 +414,8 @@ namespace LibTessDotNet
             var vNext = vDel._next;
             vNext._prev = vPrev;
             vPrev._next = vNext;
+
+            vDel.Free();
         }
 
         /// <summary>
@@ -370,6 +438,8 @@ namespace LibTessDotNet
             var fNext = fDel._next;
             fNext._prev = fPrev;
             fPrev._next = fNext;
+
+            fDel.Free();
         }
 
         /// <summary>

@@ -31,11 +31,12 @@
 ** LibTessDotNet: Remi Gillig, https://github.com/speps/LibTessDotNet
 */
 
+using System;
 using System.Diagnostics;
 
 namespace LibTessDotNet
 {
-    internal class Mesh
+    internal class Mesh : MeshUtils.Pooled<Mesh>
     {
         internal MeshUtils.Vertex _vHead;
         internal MeshUtils.Face _fHead;
@@ -43,8 +44,8 @@ namespace LibTessDotNet
 
         public Mesh()
         {
-            var v = _vHead = new MeshUtils.Vertex();
-            var f = _fHead = new MeshUtils.Face();
+            var v = _vHead = MeshUtils.Vertex.Create();
+            var f = _fHead = MeshUtils.Face.Create();
 
             var pair = MeshUtils.EdgePair.Create();
             var e = _eHead = pair._e;
@@ -78,6 +79,32 @@ namespace LibTessDotNet
             eSym._activeRegion = null;
         }
 
+        public override void Reset()
+        {
+            _vHead = null;
+            _fHead = null;
+            _eHead = _eHeadSym = null;
+        }
+
+        public override void OnFree()
+        {
+            for (MeshUtils.Face f = _fHead._next, fNext = _fHead; f != _fHead; f = fNext)
+            {
+                fNext = f._next;
+                f.Free();
+            }
+            for (MeshUtils.Vertex v = _vHead._next, vNext = _vHead; v != _vHead; v = vNext)
+            {
+                vNext = v._next;
+                v.Free();
+            }
+            for (MeshUtils.Edge e = _eHead._next, eNext = _eHead; e != _eHead; e = eNext)
+            {
+                eNext = e._next;
+                e.Free();
+            }
+        }
+
         /// <summary>
         /// Creates one edge, two vertices and a loop (face).
         /// The loop consists of the two new half-edges.
@@ -86,9 +113,9 @@ namespace LibTessDotNet
         {
             var e = MeshUtils.MakeEdge(_eHead);
 
-            MeshUtils.MakeVertex(new MeshUtils.Vertex(), e, _vHead);
-            MeshUtils.MakeVertex(new MeshUtils.Vertex(), e._Sym, _vHead);
-            MeshUtils.MakeFace(new MeshUtils.Face(), e, _fHead);
+            MeshUtils.MakeVertex(MeshUtils.Vertex.Create(), e, _vHead);
+            MeshUtils.MakeVertex(MeshUtils.Vertex.Create(), e._Sym, _vHead);
+            MeshUtils.MakeFace(MeshUtils.Face.Create(), e, _fHead);
 
             return e;
         }
@@ -146,14 +173,14 @@ namespace LibTessDotNet
             {
                 // We split one vertex into two -- the new vertex is eDst->Org.
                 // Make sure the old vertex points to a valid half-edge.
-                MeshUtils.MakeVertex(new MeshUtils.Vertex(), eDst, eOrg._Org);
+                MeshUtils.MakeVertex(MeshUtils.Vertex.Create(), eDst, eOrg._Org);
                 eOrg._Org._anEdge = eOrg;
             }
             if (!joiningLoops)
             {
                 // We split one loop into two -- the new loop is eDst->Lface.
                 // Make sure the old face points to a valid half-edge.
-                MeshUtils.MakeFace(new MeshUtils.Face(), eDst, eOrg._Lface);
+                MeshUtils.MakeFace(MeshUtils.Face.Create(), eDst, eOrg._Lface);
                 eOrg._Lface._anEdge = eOrg;
             }
         }
@@ -195,7 +222,7 @@ namespace LibTessDotNet
                 if (!joiningLoops)
                 {
                     // We are splitting one loop into two -- create a new loop for eDel.
-                    MeshUtils.MakeFace(new MeshUtils.Face(), eDel, eDel._Lface);
+                    MeshUtils.MakeFace(MeshUtils.Face.Create(), eDel, eDel._Lface);
                 }
             }
 
@@ -233,7 +260,7 @@ namespace LibTessDotNet
 
             // Set vertex and face information
             eNew._Org = eOrg._Dst;
-            MeshUtils.MakeVertex(new MeshUtils.Vertex(), eNewSym, eNew._Org);
+            MeshUtils.MakeVertex(MeshUtils.Vertex.Create(), eNewSym, eNew._Org);
             eNew._Lface = eNewSym._Lface = eOrg._Lface;
 
             return eNew;
@@ -300,7 +327,7 @@ namespace LibTessDotNet
 
             if (!joiningLoops)
             {
-                MeshUtils.MakeFace(new MeshUtils.Face(), eNew, eOrg._Lface);
+                MeshUtils.MakeFace(MeshUtils.Face.Create(), eNew, eOrg._Lface);
             }
 
             return eNew;
@@ -360,6 +387,8 @@ namespace LibTessDotNet
             var fNext = fZap._next;
             fNext._prev = fPrev;
             fPrev._next = fNext;
+
+            fZap.Free();
         }
 
         public void MergeConvexFaces(int maxVertsPerFace)

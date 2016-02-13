@@ -53,11 +53,13 @@
             // 
             // statusStrip
             // 
+            this.statusStrip.ImageScalingSize = new System.Drawing.Size(32, 32);
             this.statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.statusMain});
-            this.statusStrip.Location = new System.Drawing.Point(0, 540);
+            this.statusStrip.Location = new System.Drawing.Point(0, 1059);
             this.statusStrip.Name = "statusStrip";
-            this.statusStrip.Size = new System.Drawing.Size(752, 22);
+            this.statusStrip.Padding = new System.Windows.Forms.Padding(2, 0, 28, 0);
+            this.statusStrip.Size = new System.Drawing.Size(1601, 22);
             this.statusStrip.TabIndex = 1;
             this.statusStrip.Text = "statusStrip1";
             // 
@@ -68,6 +70,7 @@
             // 
             // toolStrip
             // 
+            this.toolStrip.ImageScalingSize = new System.Drawing.Size(32, 32);
             this.toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripLabelAsset,
             this.toolStripAssets,
@@ -85,58 +88,59 @@
             this.toolStripButtonOpen});
             this.toolStrip.Location = new System.Drawing.Point(0, 0);
             this.toolStrip.Name = "toolStrip";
-            this.toolStrip.Size = new System.Drawing.Size(752, 25);
+            this.toolStrip.Padding = new System.Windows.Forms.Padding(0, 0, 2, 0);
+            this.toolStrip.Size = new System.Drawing.Size(1601, 40);
             this.toolStrip.TabIndex = 0;
             // 
             // toolStripLabelAsset
             // 
             this.toolStripLabelAsset.Name = "toolStripLabelAsset";
-            this.toolStripLabelAsset.Size = new System.Drawing.Size(35, 22);
+            this.toolStripLabelAsset.Size = new System.Drawing.Size(71, 37);
             this.toolStripLabelAsset.Text = "Asset";
             // 
             // toolStripAssets
             // 
             this.toolStripAssets.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.toolStripAssets.Name = "toolStripAssets";
-            this.toolStripAssets.Size = new System.Drawing.Size(121, 25);
+            this.toolStripAssets.Size = new System.Drawing.Size(238, 40);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 40);
             // 
             // toolStripLabelWinding
             // 
             this.toolStripLabelWinding.Name = "toolStripLabelWinding";
-            this.toolStripLabelWinding.Size = new System.Drawing.Size(52, 22);
+            this.toolStripLabelWinding.Size = new System.Drawing.Size(105, 37);
             this.toolStripLabelWinding.Text = "Winding";
             // 
             // toolStripWinding
             // 
             this.toolStripWinding.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.toolStripWinding.Name = "toolStripWinding";
-            this.toolStripWinding.Size = new System.Drawing.Size(121, 25);
+            this.toolStripWinding.Size = new System.Drawing.Size(238, 40);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 40);
             // 
             // toolStripLabelPolySize
             // 
             this.toolStripLabelPolySize.Name = "toolStripLabelPolySize";
-            this.toolStripLabelPolySize.Size = new System.Drawing.Size(48, 22);
+            this.toolStripLabelPolySize.Size = new System.Drawing.Size(97, 37);
             this.toolStripLabelPolySize.Text = "Vertices";
             // 
             // toolStripPolySize
             // 
             this.toolStripPolySize.Name = "toolStripPolySize";
-            this.toolStripPolySize.Size = new System.Drawing.Size(40, 25);
+            this.toolStripPolySize.Size = new System.Drawing.Size(76, 40);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 40);
             // 
             // toolStripButtonShowInput
             // 
@@ -145,7 +149,7 @@
             this.toolStripButtonShowInput.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonShowInput.Image")));
             this.toolStripButtonShowInput.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButtonShowInput.Name = "toolStripButtonShowInput";
-            this.toolStripButtonShowInput.Size = new System.Drawing.Size(71, 22);
+            this.toolStripButtonShowInput.Size = new System.Drawing.Size(140, 37);
             this.toolStripButtonShowInput.Text = "Show input";
             this.toolStripButtonShowInput.ToolTipText = "Show input polygon";
             // 
@@ -156,17 +160,16 @@
             this.toolStripButtonShowWinding.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonShowWinding.Image")));
             this.toolStripButtonShowWinding.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButtonShowWinding.Name = "toolStripButtonShowWinding";
-            this.toolStripButtonShowWinding.Size = new System.Drawing.Size(86, 22);
+            this.toolStripButtonShowWinding.Size = new System.Drawing.Size(169, 37);
             this.toolStripButtonShowWinding.Text = "Show winding";
             // 
             // toolStripButtonNoEmpty
             // 
             this.toolStripButtonNoEmpty.CheckOnClick = true;
             this.toolStripButtonNoEmpty.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.toolStripButtonNoEmpty.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonNoEmpty.Image")));
             this.toolStripButtonNoEmpty.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButtonNoEmpty.Name = "toolStripButtonNoEmpty";
-            this.toolStripButtonNoEmpty.Size = new System.Drawing.Size(86, 22);
+            this.toolStripButtonNoEmpty.Size = new System.Drawing.Size(126, 37);
             this.toolStripButtonNoEmpty.Text = "No empty";
             this.toolStripButtonNoEmpty.ToolTipText = "Remove empty polygons";
             // 
@@ -176,35 +179,36 @@
             this.toolStripButtonBench.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonBench.Image")));
             this.toolStripButtonBench.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButtonBench.Name = "toolStripButtonBench";
-            this.toolStripButtonBench.Size = new System.Drawing.Size(76, 22);
+            this.toolStripButtonBench.Size = new System.Drawing.Size(148, 37);
             this.toolStripButtonBench.Text = "Benchmarks";
             // 
             // toolStripButtonOpen
             // 
             this.toolStripButtonOpen.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.toolStripButtonOpen.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonOpen.Image")));
             this.toolStripButtonOpen.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButtonOpen.Name = "toolStripButtonOpen";
-            this.toolStripButtonOpen.Size = new System.Drawing.Size(76, 22);
+            this.toolStripButtonOpen.Size = new System.Drawing.Size(78, 37);
             this.toolStripButtonOpen.Text = "Open";
             this.toolStripButtonOpen.ToolTipText = "Open a .dat file";
             // 
             // panel
             // 
             this.panel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel.Location = new System.Drawing.Point(0, 25);
+            this.panel.Location = new System.Drawing.Point(0, 40);
+            this.panel.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.panel.Name = "panel";
-            this.panel.Size = new System.Drawing.Size(752, 515);
+            this.panel.Size = new System.Drawing.Size(1601, 1019);
             this.panel.TabIndex = 2;
             // 
             // MainForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(752, 562);
+            this.ClientSize = new System.Drawing.Size(1601, 1081);
             this.Controls.Add(this.panel);
             this.Controls.Add(this.toolStrip);
             this.Controls.Add(this.statusStrip);
+            this.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "LibTessDotNet - TessBed";

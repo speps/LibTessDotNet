@@ -25,6 +25,7 @@
 *.xcuserdatad
 *.orig
 *.mlpd
+*.vspx
 TestResult.xml
 obj/
 .vscode/

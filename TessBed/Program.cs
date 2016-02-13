@@ -29,7 +29,6 @@ namespace TessBed
                     }
                     var stopwatch = new Stopwatch();
                     var loader = new DataLoader();
-                    stopwatch.Start();
                     for (int i = 0; i < count; i++)
                     {
                         foreach (var name in loader.AssetNames)
@@ -40,11 +39,12 @@ namespace TessBed
                             {
                                 var tess = new Tess();
                                 PolyConvert.ToTess(pset, tess);
+                                stopwatch.Start();
                                 tess.Tessellate(winding, ElementType.Polygons, 3);
+                                stopwatch.Stop();
                             }
                         }
                     }
-                    stopwatch.Stop();
                     Console.WriteLine("{0:F3}ms", stopwatch.Elapsed.TotalMilliseconds);
                 }
                 return;

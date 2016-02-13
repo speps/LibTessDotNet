@@ -722,6 +722,7 @@ namespace LibTessDotNet
                 OutputPolymesh(elementType, polySize);
             }
 
+            _mesh.Free();
             _mesh = null;
         }
     }

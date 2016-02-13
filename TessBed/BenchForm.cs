@@ -39,13 +39,13 @@ namespace TessBed
                 result.Output = PolyConvert.FromP2T(rpset);
                 // Time
                 var sw = new Stopwatch();
+                sw.Start();
                 for (int i = 0; i < loops; i++)
                 {
                     rpset = PolyConvert.ToP2T(pset);
-                    sw.Start();
                     Poly2Tri.P2T.Triangulate(rpset);
-                    sw.Stop();
                 }
+                sw.Stop();
                 result.Time = sw.Elapsed.TotalSeconds;
 
                 return result;
@@ -59,13 +59,13 @@ namespace TessBed
                 result.Output = PolyConvert.FromTess(tess);
                 // Time
                 var sw = new Stopwatch();
+                sw.Start();
                 for (int i = 0; i < loops; i++)
                 {
-                    sw.Start();
                     PolyConvert.ToTess(pset, tess);
                     tess.Tessellate(WindingRule.EvenOdd, ElementType.Polygons, 3);
-                    sw.Stop();
                 }
+                sw.Stop();
                 result.Time = sw.Elapsed.TotalSeconds;
                 return result;
             } }
@@ -132,22 +132,37 @@ namespace TessBed
             data.CellFormatting -= data_CellFormatting;
 
             data.Columns.Clear();
-            data.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Asset" });
-            foreach (var lib in _libs)
-                data.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = lib.Name });
+            data.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Asset", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+            for (int i = 0; i < _libs.Length; i++)
+            {
+                data.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = _libs[i].Name, AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+                if (i < (_libs.Length - 1))
+                {
+                    data.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "", AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells });
+                }
+            }
 
             data.Rows.Clear();
 
-            var buffer = new object[1 + _libs.Length];
+            var buffer = new List<object>();
             var rows = new List<DataGridViewRow>();
             foreach (var test in results)
             {
-                buffer[0] = test.Name;
+                buffer.Clear();
+                buffer.Add(test.Name);
                 for (int i = 0; i < test.Libs.Count; i++)
-                    buffer[i + 1] = test.Libs[i].Time;
+                {
+                    buffer.Add(test.Libs[i].Time);
+                    if (i < (test.Libs.Count - 1))
+                    {
+                        double coeff = test.Libs[i + 1].Time / test.Libs[i].Time;
+                        buffer.Add(string.Format("{0:F2}x", coeff));
+                    }
+                }
 
-                rows.Add(new DataGridViewRow());
-                rows[rows.Count - 1].CreateCells(data, buffer);
+                var newRow = new DataGridViewRow();
+                newRow.CreateCells(data, buffer.ToArray());
+                rows.Add(newRow);
             }
             data.Rows.AddRange(rows.ToArray());
 
@@ -183,11 +198,14 @@ namespace TessBed
             var row = data.Rows[e.RowIndex];
             for (int i = 1; i < row.Cells.Count; i++)
             {
-                double min = (double)row.Cells[colMin].Value;
-                double val = (double)row.Cells[i].Value;
-                if (val < min)
+                if (row.Cells[i].Value is double)
                 {
-                    colMin = i;
+                    double min = (double)row.Cells[colMin].Value;
+                    double val = (double)row.Cells[i].Value;
+                    if (val < min)
+                    {
+                        colMin = i;
+                    }
                 }
             }
             if (e.ColumnIndex == colMin)
