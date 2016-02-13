@@ -26,6 +26,7 @@
 *.orig
 *.mlpd
 *.vspx
+*.diagsession
 TestResult.xml
 obj/
 .vscode/

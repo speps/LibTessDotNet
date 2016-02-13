@@ -722,7 +722,8 @@ namespace LibTessDotNet
                 OutputPolymesh(elementType, polySize);
             }
 
-            _mesh.Free();
+            // Pooling disabled, performance is worse with pooling
+            //_mesh.Free();
             _mesh = null;
         }
     }
