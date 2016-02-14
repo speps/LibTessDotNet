@@ -100,7 +100,15 @@ namespace LibTessDotNet
         public float SUnitY = 0.0f;
         public float SentinelCoord = 4e30f;
 
+        /// <summary>
+        /// If true, will remove empty (zero area) polygons.
+        /// </summary>
         public bool NoEmptyPolygons = false;
+
+        /// <summary>
+        /// If true, will use pooling to reduce GC (compare performance with/without, can vary wildly).
+        /// </summary>
+        public bool UsePooling = false;
 
         public ContourVertex[] Vertices { get { return _vertices; } }
         public int VertexCount { get { return _vertexCount; } }
@@ -722,8 +730,10 @@ namespace LibTessDotNet
                 OutputPolymesh(elementType, polySize);
             }
 
-            // Pooling disabled, performance is worse with pooling
-            //_mesh.Free();
+            if (UsePooling)
+            {
+                _mesh.Free();
+            }
             _mesh = null;
         }
     }
