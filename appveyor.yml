@@ -2,7 +2,9 @@ version: 1.0.{build}
 build:
   verbosity: minimal
   project: LibTessDotNet.sln
-configuration: Release
+configuration:
+- Release
+- ReleaseDouble
 assembly_info:
   patch: true
   file: LibTessDotNet\Properties\AssemblyInfo.cs

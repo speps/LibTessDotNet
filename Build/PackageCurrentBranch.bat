@@ -7,6 +7,7 @@ del Release\*.pdb
 
 LibZ\libz.exe inject-dll --assembly Release\TessBed.exe --include Release\Poly2Tri.dll --include Release\nunit.framework.dll --move
 
+copy ReleaseDouble\LibTessDotNet.Double.dll Release\LibTessDotNet.Double.dll
 copy Instructions.txt Release\Instructions.txt
 copy ..\LICENSE.txt Release\MITLicense.txt
 
