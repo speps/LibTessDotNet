@@ -34,6 +34,8 @@
 using System;
 using System.Diagnostics;
 
+using Real = System.Single;
+
 namespace LibTessDotNet
 {
     public enum WindingRule
@@ -70,7 +72,7 @@ namespace LibTessDotNet
         }
     }
 
-    public delegate object CombineCallback(Vec3 position, object[] data, float[] weights);
+    public delegate object CombineCallback(Vec3 position, object[] data, Real[] weights);
 
     public partial class Tess
     {
@@ -79,7 +81,7 @@ namespace LibTessDotNet
         private Vec3 _sUnit;
         private Vec3 _tUnit;
 
-        private float _bminX, _bminY, _bmaxX, _bmaxY;
+        private Real _bminX, _bminY, _bmaxX, _bmaxY;
 
         private WindingRule _windingRule;
 
@@ -96,9 +98,9 @@ namespace LibTessDotNet
 
         public Vec3 Normal { get { return _normal; } set { _normal = value; } }
 
-        public float SUnitX = 1.0f;
-        public float SUnitY = 0.0f;
-        public float SentinelCoord = 4e30f;
+        public Real SUnitX = 1;
+        public Real SUnitY = 0;
+        public Real SentinelCoord = 4e30f;
 
         /// <summary>
         /// If true, will remove empty (zero area) polygons.
@@ -119,7 +121,7 @@ namespace LibTessDotNet
         public Tess()
         {
             _normal = Vec3.Zero;
-            _bminX = _bminY = _bmaxX = _bmaxY = 0.0f;
+            _bminX = _bminY = _bmaxX = _bmaxY = 0;
 
             _windingRule = WindingRule.EvenOdd;
             _mesh = null;
@@ -134,9 +136,9 @@ namespace LibTessDotNet
         {
             var v = _mesh._vHead._next;
 
-            var minVal = new float[3] { v._coords.X, v._coords.Y, v._coords.Z };
+            var minVal = new Real[3] { v._coords.X, v._coords.Y, v._coords.Z };
             var minVert = new MeshUtils.Vertex[3] { v, v, v };
-            var maxVal = new float[3] { v._coords.X, v._coords.Y, v._coords.Z };
+            var maxVal = new Real[3] { v._coords.X, v._coords.Y, v._coords.Z };
             var maxVert = new MeshUtils.Vertex[3] { v, v, v };
 
             for (; v != _mesh._vHead; v = v._next)
@@ -157,13 +159,13 @@ namespace LibTessDotNet
             if (minVal[i] >= maxVal[i])
             {
                 // All vertices are the same -- normal doesn't matter
-                norm = new Vec3 { X = 0.0f, Y = 0.0f, Z = 1.0f };
+                norm = new Vec3 { X = 0, Y = 0, Z = 1 };
                 return;
             }
 
             // Look for a third vertex which forms the triangle with maximum area
             // (Length of normal == twice the triangle area)
-            float maxLen2 = 0.0f, tLen2;
+            Real maxLen2 = 0, tLen2;
             var v1 = minVert[i];
             var v2 = maxVert[i];
             Vec3 d1, d2, tNorm;
@@ -187,7 +189,7 @@ namespace LibTessDotNet
                 // All points lie on a single line -- any decent normal will do
                 norm = Vec3.Zero;
                 i = Vec3.LongAxis(ref d1);
-                norm[i] = 1.0f;
+                norm[i] = 1;
             }
         }
 
@@ -195,7 +197,7 @@ namespace LibTessDotNet
         {
             // When we compute the normal automatically, we choose the orientation
             // so that the the sum of the signed areas of all contours is non-negative.
-            float area = 0.0f;
+            Real area = 0.0f;
             for (var f = _mesh._fHead._next; f != _mesh._fHead; f = f._next)
             {
                 if (f._anEdge._winding <= 0)
@@ -229,11 +231,11 @@ namespace LibTessDotNet
 
             int i = Vec3.LongAxis(ref norm);
 
-            _sUnit[i] = 0.0f;
+            _sUnit[i] = 0;
             _sUnit[(i + 1) % 3] = SUnitX;
             _sUnit[(i + 2) % 3] = SUnitY;
 
-            _tUnit[i] = 0.0f;
+            _tUnit[i] = 0;
             _tUnit[(i + 1) % 3] = norm[i] > 0.0f ? -SUnitY : SUnitY;
             _tUnit[(i + 2) % 3] = norm[i] > 0.0f ? SUnitX : -SUnitX;
 
@@ -464,7 +466,7 @@ namespace LibTessDotNet
 
                 if (NoEmptyPolygons)
                 {
-                    float area = MeshUtils.FaceArea(f);
+                    var area = MeshUtils.FaceArea(f);
                     if (Math.Abs(area) < float.Epsilon)
                     {
                         continue;
@@ -518,7 +520,7 @@ namespace LibTessDotNet
 
                 if (NoEmptyPolygons)
                 {
-                    float area = MeshUtils.FaceArea(f);
+                    var area = MeshUtils.FaceArea(f);
                     if (Math.Abs(area) < float.Epsilon)
                     {
                         continue;
@@ -612,9 +614,9 @@ namespace LibTessDotNet
             }
         }
 
-        private float SignedArea(ContourVertex[] vertices)
+        private Real SignedArea(ContourVertex[] vertices)
         {
-            float area = 0.0f;
+            Real area = 0.0f;
 
             for (int i = 0; i < vertices.Length; i++)
             {
@@ -625,7 +627,7 @@ namespace LibTessDotNet
                 area -= v0.Position.Y * v1.Position.X;
             }
 
-            return area * 0.5f;
+            return 0.5f * area;
         }
 
         public void AddContour(ContourVertex[] vertices)
@@ -643,7 +645,7 @@ namespace LibTessDotNet
             bool reverse = false;
             if (forceOrientation != ContourOrientation.Original)
             {
-                float area = SignedArea(vertices);
+                var area = SignedArea(vertices);
                 reverse = (forceOrientation == ContourOrientation.Clockwise && area < 0.0f) || (forceOrientation == ContourOrientation.CounterClockwise && area > 0.0f);
             }
 

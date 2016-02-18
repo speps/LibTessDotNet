@@ -34,6 +34,8 @@
 using System;
 using System.Diagnostics;
 
+using Real = System.Single;
+
 namespace LibTessDotNet
 {
     internal static class Geom
@@ -80,7 +82,7 @@ namespace LibTessDotNet
         /// let r be the negated result (this evaluates (uw)(v->s)), then
         /// r is guaranteed to satisfy MIN(u->t,w->t) <= r <= MAX(u->t,w->t).
         /// </summary>
-        public static float EdgeEval(MeshUtils.Vertex u, MeshUtils.Vertex v, MeshUtils.Vertex w)
+        public static Real EdgeEval(MeshUtils.Vertex u, MeshUtils.Vertex v, MeshUtils.Vertex w)
         {
             Debug.Assert(VertLeq(u, v) && VertLeq(v, w));
 
@@ -99,7 +101,7 @@ namespace LibTessDotNet
                 }
             }
             /* vertical line */
-            return 0.0f;
+            return 0;
         }
 
         /// <summary>
@@ -107,7 +109,7 @@ namespace LibTessDotNet
         /// is cheaper to evaluate. Returns > 0, == 0 , or < 0
         /// as v is above, on, or below the edge uw.
         /// </summary>
-        public static float EdgeSign(MeshUtils.Vertex u, MeshUtils.Vertex v, MeshUtils.Vertex w)
+        public static Real EdgeSign(MeshUtils.Vertex u, MeshUtils.Vertex v, MeshUtils.Vertex w)
         {
             Debug.Assert(VertLeq(u, v) && VertLeq(v, w));
 
@@ -119,7 +121,7 @@ namespace LibTessDotNet
                 return (v._t - w._t) * gapL + (v._t - u._t) * gapR;
             }
             /* vertical line */
-            return 0.0f;
+            return 0;
         }
 
         public static bool TransLeq(MeshUtils.Vertex lhs, MeshUtils.Vertex rhs)
@@ -127,7 +129,7 @@ namespace LibTessDotNet
             return (lhs._t < rhs._t) || (lhs._t == rhs._t && lhs._s <= rhs._s);
         }
 
-        public static float TransEval(MeshUtils.Vertex u, MeshUtils.Vertex v, MeshUtils.Vertex w)
+        public static Real TransEval(MeshUtils.Vertex u, MeshUtils.Vertex v, MeshUtils.Vertex w)
         {
             Debug.Assert(TransLeq(u, v) && TransLeq(v, w));
 
@@ -146,10 +148,10 @@ namespace LibTessDotNet
                 }
             }
             /* vertical line */
-            return 0.0f;
+            return 0;
         }
 
-        public static float TransSign(MeshUtils.Vertex u, MeshUtils.Vertex v, MeshUtils.Vertex w)
+        public static Real TransSign(MeshUtils.Vertex u, MeshUtils.Vertex v, MeshUtils.Vertex w)
         {
             Debug.Assert(TransLeq(u, v) && TransLeq(v, w));
 
@@ -161,7 +163,7 @@ namespace LibTessDotNet
                 return (v._s - w._s) * gapL + (v._s - u._s) * gapR;
             }
             /* vertical line */
-            return 0.0f;
+            return 0;
         }
 
         public static bool EdgeGoesLeft(MeshUtils.Edge e)
@@ -174,7 +176,7 @@ namespace LibTessDotNet
             return VertLeq(e._Org, e._Dst);
         }
 
-        public static float VertL1dist(MeshUtils.Vertex u, MeshUtils.Vertex v)
+        public static Real VertL1dist(MeshUtils.Vertex u, MeshUtils.Vertex v)
         {
             return Math.Abs(u._s - v._s) + Math.Abs(u._t - v._t);
         }
@@ -185,10 +187,16 @@ namespace LibTessDotNet
             eDst._Sym._winding += eSrc._Sym._winding;
         }
 
-        public static float Interpolate(float a, float x, float b, float y)
+        public static Real Interpolate(Real a, Real x, Real b, Real y)
         {
-            a = a < 0.0f ? 0.0f : a;
-            b = b < 0.0f ? 0.0f : b;
+            if (a < 0.0f)
+            {
+                a = 0.0f;
+            }
+            if (b < 0.0f)
+            {
+                b = 0.0f;
+            }
             return ((a <= b) ? ((b == 0.0f) ? ((x+y) / 2.0f)
                     : (x + (y-x) * (a/(a+b))))
                     : (y + (x-y) * (b/(a+b))));

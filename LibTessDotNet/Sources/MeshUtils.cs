@@ -35,15 +35,17 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
+using Real = System.Single;
+
 namespace LibTessDotNet
 {
     public struct Vec3
     {
         public readonly static Vec3 Zero = new Vec3();
 
-        public float X, Y, Z;
+        public Real X, Y, Z;
 
-        public float this[int index]
+        public Real this[int index]
         {
             get
             {
@@ -75,14 +77,14 @@ namespace LibTessDotNet
             v.Z = -v.Z;
         }
 
-        public static void Dot(ref Vec3 u, ref Vec3 v, out float dot)
+        public static void Dot(ref Vec3 u, ref Vec3 v, out Real dot)
         {
             dot = u.X * v.X + u.Y * v.Y + u.Z * v.Z;
         }
 
         public static void Normalize(ref Vec3 v)
         {
-            float len = v.X * v.X + v.Y * v.Y + v.Z * v.Z;
+            var len = v.X * v.X + v.Y * v.Y + v.Z * v.Z;
             Debug.Assert(len >= 0.0f);
             len = 1.0f / (float)Math.Sqrt(len);
             v.X *= len;
@@ -142,7 +144,7 @@ namespace LibTessDotNet
             internal Edge _anEdge;
 
             internal Vec3 _coords;
-            internal float _s, _t;
+            internal Real _s, _t;
             internal PQHandle _pqHandle;
             internal int _n;
             internal object _data;
@@ -314,15 +316,15 @@ namespace LibTessDotNet
         }
 
         /// <summary>
-        /// MakeVertex( newVertex, eOrig, vNext ) attaches a new vertex and makes it the
+        /// MakeVertex( eOrig, vNext ) attaches a new vertex and makes it the
         /// origin of all edges in the vertex loop to which eOrig belongs. "vNext" gives
         /// a place to insert the new vertex in the global vertex list. We insert
         /// the new vertex *before* vNext so that algorithms which walk the vertex
         /// list will not see the newly created vertices.
         /// </summary>
-        public static void MakeVertex(Vertex vNew, Edge eOrig, Vertex vNext)
+        public static void MakeVertex(Edge eOrig, Vertex vNext)
         {
-            Debug.Assert(vNew != null);
+            var vNew = MeshUtils.Vertex.Create();
 
             // insert in circular doubly-linked list before vNext
             var vPrev = vNext._prev;
@@ -343,15 +345,15 @@ namespace LibTessDotNet
         }
 
         /// <summary>
-        /// MakeFace( newFace, eOrig, fNext ) attaches a new face and makes it the left
+        /// MakeFace( eOrig, fNext ) attaches a new face and makes it the left
         /// face of all edges in the face loop to which eOrig belongs. "fNext" gives
         /// a place to insert the new face in the global face list. We insert
         /// the new face *before* fNext so that algorithms which walk the face
         /// list will not see the newly created faces.
         /// </summary>
-        public static void MakeFace(Face fNew, Edge eOrig, Face fNext)
+        public static void MakeFace(Edge eOrig, Face fNext)
         {
-            Debug.Assert(fNew != null);
+            var fNew = MeshUtils.Face.Create();
 
             // insert in circular doubly-linked list before fNext
             var fPrev = fNext._prev;
@@ -445,9 +447,9 @@ namespace LibTessDotNet
         /// <summary>
         /// Return signed area of face.
         /// </summary>
-        public static float FaceArea(Face f)
+        public static Real FaceArea(Face f)
         {
-            float area = 0.0f;
+            Real area = 0;
             var e = f._anEdge;
             do
             {

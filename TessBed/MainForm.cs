@@ -198,10 +198,10 @@ namespace TessBed
         {
             var colors = new Color[] { (Color)data[0], (Color)data[1], (Color)data[2], (Color)data[3] };
             var rgba = new float[] {
-                colors[0].R * weights[0] + colors[1].R * weights[1] + colors[2].R * weights[2] + colors[3].R * weights[3],
-                colors[0].G * weights[0] + colors[1].G * weights[1] + colors[2].G * weights[2] + colors[3].G * weights[3],
-                colors[0].B * weights[0] + colors[1].B * weights[1] + colors[2].B * weights[2] + colors[3].B * weights[3],
-                colors[0].A * weights[0] + colors[1].A * weights[1] + colors[2].A * weights[2] + colors[3].A * weights[3]
+                (float)colors[0].R * weights[0] + (float)colors[1].R * weights[1] + (float)colors[2].R * weights[2] + (float)colors[3].R * weights[3],
+                (float)colors[0].G * weights[0] + (float)colors[1].G * weights[1] + (float)colors[2].G * weights[2] + (float)colors[3].G * weights[3],
+                (float)colors[0].B * weights[0] + (float)colors[1].B * weights[1] + (float)colors[2].B * weights[2] + (float)colors[3].B * weights[3],
+                (float)colors[0].A * weights[0] + (float)colors[1].A * weights[1] + (float)colors[2].A * weights[2] + (float)colors[3].A * weights[3]
             };
             return Color.FromArgb((int)rgba[3], (int)rgba[0], (int)rgba[1], (int)rgba[2]);
         }

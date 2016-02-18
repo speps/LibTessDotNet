@@ -34,6 +34,8 @@
 using System;
 using System.Diagnostics;
 
+using Real = System.Single;
+
 namespace LibTessDotNet
 {
     public partial class Tess
@@ -339,13 +341,13 @@ namespace LibTessDotNet
         /// splits the weight between its org and dst according to the
         /// relative distance to "isect".
         /// </summary>
-        private void VertexWeights(MeshUtils.Vertex isect, MeshUtils.Vertex org, MeshUtils.Vertex dst, out float w0, out float w1)
+        private void VertexWeights(MeshUtils.Vertex isect, MeshUtils.Vertex org, MeshUtils.Vertex dst, out Real w0, out Real w1)
         {
             var t1 = Geom.VertL1dist(org, isect);
             var t2 = Geom.VertL1dist(dst, isect);
 
-            w0 = 0.5f * t2 / (t1 + t2);
-            w1 = 0.5f * t1 / (t1 + t2);
+            w0 = (t2 / (t1 + t2)) / 2.0f;
+            w1 = (t1 / (t1 + t2)) / 2.0f;
 
             isect._coords.X += w0 * org._coords.X + w1 * dst._coords.X;
             isect._coords.Y += w0 * org._coords.Y + w1 * dst._coords.Y;
@@ -360,7 +362,7 @@ namespace LibTessDotNet
         private void GetIntersectData(MeshUtils.Vertex isect, MeshUtils.Vertex orgUp, MeshUtils.Vertex dstUp, MeshUtils.Vertex orgLo, MeshUtils.Vertex dstLo)
         {
             isect._coords = Vec3.Zero;
-            float w0, w1, w2, w3;
+            Real w0, w1, w2, w3;
             VertexWeights(isect, orgUp, dstUp, out w0, out w1);
             VertexWeights(isect, orgLo, dstLo, out w2, out w3);
 
@@ -369,7 +371,7 @@ namespace LibTessDotNet
                 isect._data = _combineCallback(
                     isect._coords,
                     new object[] { orgUp._data, dstUp._data, orgLo._data, dstLo._data },
-                    new float[] { w0, w1, w2, w3 }
+                    new Real[] { w0, w1, w2, w3 }
                 );
             }
         }
@@ -593,7 +595,7 @@ namespace LibTessDotNet
             if (   (! Geom.VertEq(dstUp, _event)
                 && Geom.EdgeSign(dstUp, _event, isect) >= 0.0f)
                 || (! Geom.VertEq(dstLo, _event)
-                && Geom.EdgeSign(dstLo, _event, isect) <= 0.0f ))
+                && Geom.EdgeSign(dstLo, _event, isect) <= 0.0f))
             {
                 // Very unusual -- the new upper or lower edge would pass on the
                 // wrong side of the sweep event, or through it. This can happen
@@ -1010,7 +1012,7 @@ namespace LibTessDotNet
         /// We add two sentinel edges above and below all other edges,
         /// to avoid special cases at the top and bottom.
         /// </summary>
-        private void AddSentinel(float smin, float smax, float t)
+        private void AddSentinel(Real smin, Real smax, Real t)
         {
             var e = _mesh.MakeEdge();
             e._Org._s = smax;
