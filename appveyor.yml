@@ -1,10 +1,7 @@
 version: 1.0.{build}
 build:
   verbosity: minimal
-  project: LibTessDotNet.sln
-configuration:
-- Release
-- ReleaseDouble
+  project: Build\Automation.proj
 assembly_info:
   patch: true
   file: LibTessDotNet\Properties\AssemblyInfo.cs
