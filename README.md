@@ -26,6 +26,7 @@ Provide a robust and fast tessellator (polygons with N vertices in the output) f
     - connected polygons (didn't quite tried this yet, but should work)
     - boundary only (to have a basic union of two contours)
 * Handles polygons computed with [Clipper](http://www.angusj.com/delphi/clipper.php) - an open source freeware polygon clipping library
+* Single/Double precision support
 
 ### Screenshot
 
