@@ -90,7 +90,7 @@ namespace LibTessDotNet
         {
             var len = v.X * v.X + v.Y * v.Y + v.Z * v.Z;
             Debug.Assert(len >= 0.0f);
-            len = 1.0f / (float)Math.Sqrt(len);
+            len = 1.0f / (Real)Math.Sqrt(len);
             v.X *= len;
             v.Y *= len;
             v.Z *= len;

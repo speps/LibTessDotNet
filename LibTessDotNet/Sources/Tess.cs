@@ -104,7 +104,11 @@ namespace LibTessDotNet
 
         public Real SUnitX = 1;
         public Real SUnitY = 0;
+#if DOUBLE
+        public Real SentinelCoord = 4e150;
+#else
         public Real SentinelCoord = 4e30f;
+#endif
 
         /// <summary>
         /// If true, will remove empty (zero area) polygons.
@@ -471,7 +475,7 @@ namespace LibTessDotNet
                 if (NoEmptyPolygons)
                 {
                     var area = MeshUtils.FaceArea(f);
-                    if (Math.Abs(area) < float.Epsilon)
+                    if (Math.Abs(area) < Real.Epsilon)
                     {
                         continue;
                     }
@@ -525,7 +529,7 @@ namespace LibTessDotNet
                 if (NoEmptyPolygons)
                 {
                     var area = MeshUtils.FaceArea(f);
-                    if (Math.Abs(area) < float.Epsilon)
+                    if (Math.Abs(area) < Real.Epsilon)
                     {
                         continue;
                     }
