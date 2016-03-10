@@ -315,8 +315,8 @@ namespace LibTessDotNet
             var up = face._anEdge;
             Debug.Assert(up._Lnext != up && up._Lnext._Lnext != up);
 
-            for (; Geom.VertLeq(up._Dst, up._Org); up = up._Lprev) { }
-            for (; Geom.VertLeq(up._Org, up._Dst); up = up._Lnext) { }
+            while (Geom.VertLeq(up._Dst, up._Org)) up = up._Lprev;
+            while (Geom.VertLeq(up._Org, up._Dst)) up = up._Lnext;
 
             var lo = up._Lprev;
 
