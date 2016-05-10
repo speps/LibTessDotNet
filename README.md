@@ -36,6 +36,11 @@ Provide a robust and fast tessellator (polygons with N vertices in the output) f
 
 ![Benchmarks](https://raw.github.com/speps/LibTessDotNet/master/TessBed/Misc/benchmarks.png)
 
+### Notes
+
+* When using `ElementType.BoundaryContours`, `Tess.Elements` will contain a list of ranges `[startVertexIndex, vertexCount]`.
+  Those ranges are to used with `Tess.Vertices`.
+
 ### TODO
 
 * Profile GC allocations
