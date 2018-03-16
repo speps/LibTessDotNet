@@ -559,7 +559,7 @@ namespace LibTessDotNet
 
             // At this point the edges intersect, at least marginally
 
-            var isect = MeshUtils.Vertex.Create();
+            var isect = new MeshUtils.Vertex(); // (without pool becouse of stack scope)
             Geom.EdgeIntersect(dstUp, orgUp, dstLo, orgLo, isect);
             // The following properties are guaranteed:
             Debug.Assert(Math.Min(orgUp._t, dstUp._t) <= isect._t);

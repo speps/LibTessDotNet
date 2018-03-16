@@ -266,6 +266,9 @@ namespace TessBed
 
             statusMain.Text = string.Format("{0:F3} ms - {1} polygons (of {2} vertices) {3}", _sw.Elapsed.TotalMilliseconds, _tess.ElementCount, _polySize, _polySize == 3 ? "... triangles" : "");
 
+            /*string debugBalance = DebugPoolBalanceChecker.GetDebugAboutPoolBalanceAll();
+            if (!debugBalance.Equals("")) MessageBox.Show("debugBalance: " + debugBalance);*/
+
             _canvas.Input = input;
             _canvas.Output = output;
             _canvas.Invalidate();

@@ -31,6 +31,8 @@
 ** LibTessDotNet: Remi Gillig, https://github.com/speps/LibTessDotNet
 */
 
+//#define DEBUG_CHECK_BALANCE // todo
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -43,6 +45,33 @@ using Real = System.Single;
 namespace LibTessDotNet
 #endif
 {
+    public class DebugPoolBalanceChecker
+    {
+        /// <summary>
+        /// Get a string of debug info about balance of create/free
+        /// </summary>
+        /// <returns>A string (empty - if balance is ok)</returns>
+        public static string GetDebugAboutPoolBalanceAll()
+        {
+            string s = "";
+            string temp;
+
+            temp = MeshUtils.Vertex.GetDebugAboutPoolBalance();
+            if (!temp.Equals("")) s += "Vertex: " + temp + "\n";
+
+            temp = MeshUtils.Face.GetDebugAboutPoolBalance();
+            if (!temp.Equals("")) s += "Face: " + temp + "\n";
+
+            temp = MeshUtils.EdgePair.GetDebugAboutPoolBalance();
+            if (!temp.Equals("")) s += "EdgePair: " + temp + "\n";
+
+            temp = MeshUtils.Edge.GetDebugAboutPoolBalance();
+            if (!temp.Equals("")) s += "Edge: " + temp + "\n";
+
+            return s;
+        }
+    }
+
     public struct Vec3
     {
         public readonly static Vec3 Zero = new Vec3();
@@ -116,29 +145,48 @@ namespace LibTessDotNet
 
         public abstract class Pooled<T> where T : Pooled<T>, new()
         {
-            private static Stack<T> _stack;
+            private static Stack<T> _stack = new Stack<T>();
+
+#if DEBUG_CHECK_BALANCE
+            private static int _invokedCreateCount = 0;
+            private static int _invokedFreeCount = 0;
+#endif
 
             public abstract void Reset();
-            public virtual void OnFree() {}
 
             public static T Create()
             {
-                if (_stack != null && _stack.Count > 0)
-                {
-                    return _stack.Pop();
-                }
+#if DEBUG_CHECK_BALANCE
+                _invokedCreateCount++;
+#endif
+                if (_stack.Count > 0) return _stack.Pop();
                 return new T();
             }
 
             public void Free()
             {
-                OnFree();
+#if DEBUG_CHECK_BALANCE
+                _invokedFreeCount++;
+#endif
+
                 Reset();
-                if (_stack == null)
-                {
-                    _stack = new Stack<T>();
-                }
                 _stack.Push((T)this);
+            }
+
+            /// <summary>
+            /// Get a string of debug info about balance of create/free
+            /// </summary>
+            /// <returns>A string (empty - if balance is ok)</returns>
+            public static string GetDebugAboutPoolBalance()
+            {
+#if DEBUG_CHECK_BALANCE
+                if (_invokedCreateCount == _invokedFreeCount) return "";
+
+                return "Create: " + _invokedCreateCount + "; Free: " + _invokedFreeCount +
+                    "; Balance: " + (_invokedCreateCount - _invokedFreeCount);
+#else
+                return "disabled balance check";
+#endif
             }
         }
 
@@ -200,21 +248,11 @@ namespace LibTessDotNet
             }
         }
 
-        public struct EdgePair
+        public class EdgePair : Pooled<EdgePair>
         {
             internal Edge _e, _eSym;
 
-            public static EdgePair Create()
-            {
-                var pair = new MeshUtils.EdgePair();
-                pair._e = MeshUtils.Edge.Create();
-                pair._e._pair = pair;
-                pair._eSym = MeshUtils.Edge.Create();
-                pair._eSym._pair = pair;
-                return pair;
-            }
-
-            public void Reset()
+            public override void Reset()
             {
                 _e = _eSym = null;
             }
@@ -249,56 +287,21 @@ namespace LibTessDotNet
 
             public override void Reset()
             {
-                _pair.Reset();
+                _pair = null;
                 _next = _Sym = _Onext = _Lnext = null;
                 _Org = null;
                 _Lface = null;
                 _activeRegion = null;
                 _winding = 0;
             }
-        }
 
-        /// <summary>
-        /// MakeEdge creates a new pair of half-edges which form their own loop.
-        /// No vertex or face structures are allocated, but these must be assigned
-        /// before the current edge operation is completed.
-        /// </summary>
-        public static Edge MakeEdge(Edge eNext)
-        {
-            Debug.Assert(eNext != null);
-
-            var pair = EdgePair.Create();
-            var e = pair._e;
-            var eSym = pair._eSym;
-
-            // Make sure eNext points to the first edge of the edge pair
-            Edge.EnsureFirst(ref eNext);
-
-            // Insert in circular doubly-linked list before eNext.
-            // Note that the prev pointer is stored in Sym->next.
-            var ePrev = eNext._Sym._next;
-            eSym._next = ePrev;
-            ePrev._Sym._next = e;
-            e._next = eNext;
-            eNext._Sym._next = eSym;
-
-            e._Sym = eSym;
-            e._Onext = e;
-            e._Lnext = eSym;
-            e._Org = null;
-            e._Lface = null;
-            e._winding = 0;
-            e._activeRegion = null;
-
-            eSym._Sym = e;
-            eSym._Onext = eSym;
-            eSym._Lnext = e;
-            eSym._Org = null;
-            eSym._Lface = null;
-            eSym._winding = 0;
-            eSym._activeRegion = null;
-
-            return e;
+            /// <summary>
+            /// Is returned to pool, for avoid double free
+            /// </summary>
+            public bool IsReturnedToPool()
+            {
+                return (_pair == null);
+            }
         }
 
         /// <summary>
