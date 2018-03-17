@@ -200,6 +200,17 @@ namespace TessBed
             }
 
             Assert.AreEqual(testData.Indices, indices.ToArray());
+            AssertPooling();
+        }
+
+        private void AssertPooling()
+        {
+#if DEBUG
+            Assert.AreEqual(MeshUtils.Vertex.InvokedCreateCount, MeshUtils.Vertex.InvokedFreeCount);
+            Assert.AreEqual(MeshUtils.Face.InvokedCreateCount, MeshUtils.Face.InvokedFreeCount);
+            Assert.AreEqual(MeshUtils.EdgePair.InvokedCreateCount, MeshUtils.EdgePair.InvokedFreeCount);
+            Assert.AreEqual(MeshUtils.Edge.InvokedCreateCount, MeshUtils.Edge.InvokedFreeCount);
+#endif
         }
 
         public TestData ParseTestData(WindingRule winding, int elementSize, Stream resourceStream)

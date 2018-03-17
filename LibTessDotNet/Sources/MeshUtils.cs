@@ -31,7 +31,9 @@
 ** LibTessDotNet: Remi Gillig, https://github.com/speps/LibTessDotNet
 */
 
-//#define DEBUG_CHECK_BALANCE // todo
+#if DEBUG
+#define DEBUG_CHECK_BALANCE
+#endif
 
 using System;
 using System.Collections.Generic;
@@ -45,33 +47,6 @@ using Real = System.Single;
 namespace LibTessDotNet
 #endif
 {
-    public class DebugPoolBalanceChecker
-    {
-        /// <summary>
-        /// Get a string of debug info about balance of create/free
-        /// </summary>
-        /// <returns>A string (empty - if balance is ok)</returns>
-        public static string GetDebugAboutPoolBalanceAll()
-        {
-            string s = "";
-            string temp;
-
-            temp = MeshUtils.Vertex.GetDebugAboutPoolBalance();
-            if (!temp.Equals("")) s += "Vertex: " + temp + "\n";
-
-            temp = MeshUtils.Face.GetDebugAboutPoolBalance();
-            if (!temp.Equals("")) s += "Face: " + temp + "\n";
-
-            temp = MeshUtils.EdgePair.GetDebugAboutPoolBalance();
-            if (!temp.Equals("")) s += "EdgePair: " + temp + "\n";
-
-            temp = MeshUtils.Edge.GetDebugAboutPoolBalance();
-            if (!temp.Equals("")) s += "Edge: " + temp + "\n";
-
-            return s;
-        }
-    }
-
     public struct Vec3
     {
         public readonly static Vec3 Zero = new Vec3();
@@ -139,7 +114,11 @@ namespace LibTessDotNet
         }
     }
 
+#if DEBUG
+    public static class MeshUtils
+#else
     internal static class MeshUtils
+#endif
     {
         public const int Undef = ~0;
 
@@ -148,8 +127,8 @@ namespace LibTessDotNet
             private static Stack<T> _stack = new Stack<T>();
 
 #if DEBUG_CHECK_BALANCE
-            private static int _invokedCreateCount = 0;
-            private static int _invokedFreeCount = 0;
+            public static int InvokedCreateCount = 0;
+            public static int InvokedFreeCount = 0;
 #endif
 
             public abstract void Reset();
@@ -157,7 +136,7 @@ namespace LibTessDotNet
             public static T Create()
             {
 #if DEBUG_CHECK_BALANCE
-                _invokedCreateCount++;
+                InvokedCreateCount++;
 #endif
                 if (_stack.Count > 0) return _stack.Pop();
                 return new T();
@@ -166,27 +145,11 @@ namespace LibTessDotNet
             public void Free()
             {
 #if DEBUG_CHECK_BALANCE
-                _invokedFreeCount++;
+                InvokedFreeCount++;
 #endif
 
                 Reset();
                 _stack.Push((T)this);
-            }
-
-            /// <summary>
-            /// Get a string of debug info about balance of create/free
-            /// </summary>
-            /// <returns>A string (empty - if balance is ok)</returns>
-            public static string GetDebugAboutPoolBalance()
-            {
-#if DEBUG_CHECK_BALANCE
-                if (_invokedCreateCount == _invokedFreeCount) return "";
-
-                return "Create: " + _invokedCreateCount + "; Free: " + _invokedFreeCount +
-                    "; Balance: " + (_invokedCreateCount - _invokedFreeCount);
-#else
-                return "disabled balance check";
-#endif
             }
         }
 

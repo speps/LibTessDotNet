@@ -113,7 +113,10 @@ namespace LibTessDotNet
         /// <summary>
         /// If true, will remove empty (zero area) polygons.
         /// </summary>
-        public bool NoEmptyPolygons = false;
+        public bool NoEmptyPolygons = false;        /// <summary>
+        /// If true, will use pooling to reduce GC (compare performance with/without, can vary wildly).
+        /// </summary>
+        public bool UsePooling = true;
 
         public ContourVertex[] Vertices { get { return _vertices; } }
         public int VertexCount { get { return _vertexCount; } }
@@ -736,7 +739,10 @@ namespace LibTessDotNet
                 OutputPolymesh(elementType, polySize);
             }
 
-            _mesh.Free();
+            if (UsePooling)
+            {
+                _mesh.Free();
+            }
             _mesh = null;
         }
     }
