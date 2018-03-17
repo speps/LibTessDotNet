@@ -31,6 +31,10 @@
 ** LibTessDotNet: Remi Gillig, https://github.com/speps/LibTessDotNet
 */
 
+#if DEBUG
+#define DEBUG_CHECK_BALANCE
+#endif
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -110,34 +114,41 @@ namespace LibTessDotNet
         }
     }
 
+#if DEBUG
+    public static class MeshUtils
+#else
     internal static class MeshUtils
+#endif
     {
         public const int Undef = ~0;
 
         public abstract class Pooled<T> where T : Pooled<T>, new()
         {
-            private static Stack<T> _stack;
+            private static Stack<T> _stack = new Stack<T>();
+
+#if DEBUG_CHECK_BALANCE
+            public static int InvokedCreateCount = 0;
+            public static int InvokedFreeCount = 0;
+#endif
 
             public abstract void Reset();
-            public virtual void OnFree() {}
 
             public static T Create()
             {
-                if (_stack != null && _stack.Count > 0)
-                {
-                    return _stack.Pop();
-                }
+#if DEBUG_CHECK_BALANCE
+                InvokedCreateCount++;
+#endif
+                if (_stack.Count > 0) return _stack.Pop();
                 return new T();
             }
 
             public void Free()
             {
-                OnFree();
+#if DEBUG_CHECK_BALANCE
+                InvokedFreeCount++;
+#endif
+
                 Reset();
-                if (_stack == null)
-                {
-                    _stack = new Stack<T>();
-                }
                 _stack.Push((T)this);
             }
         }
@@ -200,21 +211,11 @@ namespace LibTessDotNet
             }
         }
 
-        public struct EdgePair
+        public class EdgePair : Pooled<EdgePair>
         {
             internal Edge _e, _eSym;
 
-            public static EdgePair Create()
-            {
-                var pair = new MeshUtils.EdgePair();
-                pair._e = MeshUtils.Edge.Create();
-                pair._e._pair = pair;
-                pair._eSym = MeshUtils.Edge.Create();
-                pair._eSym._pair = pair;
-                return pair;
-            }
-
-            public void Reset()
+            public override void Reset()
             {
                 _e = _eSym = null;
             }
@@ -249,56 +250,21 @@ namespace LibTessDotNet
 
             public override void Reset()
             {
-                _pair.Reset();
+                _pair = null;
                 _next = _Sym = _Onext = _Lnext = null;
                 _Org = null;
                 _Lface = null;
                 _activeRegion = null;
                 _winding = 0;
             }
-        }
 
-        /// <summary>
-        /// MakeEdge creates a new pair of half-edges which form their own loop.
-        /// No vertex or face structures are allocated, but these must be assigned
-        /// before the current edge operation is completed.
-        /// </summary>
-        public static Edge MakeEdge(Edge eNext)
-        {
-            Debug.Assert(eNext != null);
-
-            var pair = EdgePair.Create();
-            var e = pair._e;
-            var eSym = pair._eSym;
-
-            // Make sure eNext points to the first edge of the edge pair
-            Edge.EnsureFirst(ref eNext);
-
-            // Insert in circular doubly-linked list before eNext.
-            // Note that the prev pointer is stored in Sym->next.
-            var ePrev = eNext._Sym._next;
-            eSym._next = ePrev;
-            ePrev._Sym._next = e;
-            e._next = eNext;
-            eNext._Sym._next = eSym;
-
-            e._Sym = eSym;
-            e._Onext = e;
-            e._Lnext = eSym;
-            e._Org = null;
-            e._Lface = null;
-            e._winding = 0;
-            e._activeRegion = null;
-
-            eSym._Sym = e;
-            eSym._Onext = eSym;
-            eSym._Lnext = e;
-            eSym._Org = null;
-            eSym._Lface = null;
-            eSym._winding = 0;
-            eSym._activeRegion = null;
-
-            return e;
+            /// <summary>
+            /// Is returned to pool, for avoid double free
+            /// </summary>
+            public bool IsReturnedToPool()
+            {
+                return (_pair == null);
+            }
         }
 
         /// <summary>

@@ -32,6 +32,7 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 #if DOUBLE
@@ -46,12 +47,14 @@ namespace LibTessDotNet
         internal MeshUtils.Face _fHead;
         internal MeshUtils.Edge _eHead, _eHeadSym;
 
-        public Mesh()
+        private readonly List<MeshUtils.EdgePair> _allEdgePairs = new List<MeshUtils.EdgePair>(20000);
+
+        public void Init()
         {
             var v = _vHead = MeshUtils.Vertex.Create();
             var f = _fHead = MeshUtils.Face.Create();
 
-            var pair = MeshUtils.EdgePair.Create();
+            var pair = CreateEdgePair();
             var e = _eHead = pair._e;
             var eSym = _eHeadSym = pair._eSym;
 
@@ -85,28 +88,58 @@ namespace LibTessDotNet
 
         public override void Reset()
         {
+            MeshUtils.Face f = _fHead._next;
+            while (true)
+            {
+                MeshUtils.Face fNext = f._next;
+                f.Free();
+                if (f == _fHead) break;
+                f = fNext;
+            }
+
+            MeshUtils.Vertex v = _vHead._next;
+            while (true)
+            {
+                MeshUtils.Vertex vNext = v._next;
+                v.Free();
+                if (v == _vHead) break;
+                v = vNext;
+            }
+
+            for (int i = 0; i < _allEdgePairs.Count; i++)
+            {
+                MeshUtils.EdgePair pair = _allEdgePairs[i];
+
+                MeshUtils.Edge e = pair._e;
+                if (!e.IsReturnedToPool()) // (can be Free in KillEdge)
+                {
+                    e.Free();
+                }
+
+                MeshUtils.Edge eSym = pair._eSym;
+                if (!eSym.IsReturnedToPool()) // (can be Free in KillEdge)
+                {
+                    eSym.Free();
+                }
+
+                pair.Free();
+            }
+            _allEdgePairs.Clear();
+
             _vHead = null;
             _fHead = null;
             _eHead = _eHeadSym = null;
         }
 
-        public override void OnFree()
+        private MeshUtils.EdgePair CreateEdgePair()
         {
-            for (MeshUtils.Face f = _fHead._next, fNext = _fHead; f != _fHead; f = fNext)
-            {
-                fNext = f._next;
-                f.Free();
-            }
-            for (MeshUtils.Vertex v = _vHead._next, vNext = _vHead; v != _vHead; v = vNext)
-            {
-                vNext = v._next;
-                v.Free();
-            }
-            for (MeshUtils.Edge e = _eHead._next, eNext = _eHead; e != _eHead; e = eNext)
-            {
-                eNext = e._next;
-                e.Free();
-            }
+            var pair = MeshUtils.EdgePair.Create();
+            pair._e = MeshUtils.Edge.Create();
+            pair._e._pair = pair;
+            pair._eSym = MeshUtils.Edge.Create();
+            pair._eSym._pair = pair;
+            _allEdgePairs.Add(pair);
+            return pair;
         }
 
         /// <summary>
@@ -115,11 +148,54 @@ namespace LibTessDotNet
         /// </summary>
         public MeshUtils.Edge MakeEdge()
         {
-            var e = MeshUtils.MakeEdge(_eHead);
+            var e = MakeEdge(_eHead);
 
             MeshUtils.MakeVertex(e, _vHead);
             MeshUtils.MakeVertex(e._Sym, _vHead);
             MeshUtils.MakeFace(e, _fHead);
+
+            return e;
+        }
+
+        /// <summary>
+        /// MakeEdge creates a new pair of half-edges which form their own loop.
+        /// No vertex or face structures are allocated, but these must be assigned
+        /// before the current edge operation is completed.
+        /// </summary>
+        private MeshUtils.Edge MakeEdge(MeshUtils.Edge eNext)
+        {
+            Debug.Assert(eNext != null);
+
+            var pair = CreateEdgePair();
+            var e = pair._e;
+            var eSym = pair._eSym;
+
+            // Make sure eNext points to the first edge of the edge pair
+            MeshUtils.Edge.EnsureFirst(ref eNext);
+
+            // Insert in circular doubly-linked list before eNext.
+            // Note that the prev pointer is stored in Sym->next.
+            var ePrev = eNext._Sym._next;
+            eSym._next = ePrev;
+            ePrev._Sym._next = e;
+            e._next = eNext;
+            eNext._Sym._next = eSym;
+
+            e._Sym = eSym;
+            e._Onext = e;
+            e._Lnext = eSym;
+            e._Org = null;
+            e._Lface = null;
+            e._winding = 0;
+            e._activeRegion = null;
+
+            eSym._Sym = e;
+            eSym._Onext = eSym;
+            eSym._Lnext = e;
+            eSym._Org = null;
+            eSym._Lface = null;
+            eSym._winding = 0;
+            eSym._activeRegion = null;
 
             return e;
         }
@@ -256,7 +332,7 @@ namespace LibTessDotNet
         /// </summary>
         public MeshUtils.Edge AddEdgeVertex(MeshUtils.Edge eOrg)
         {
-            var eNew = MeshUtils.MakeEdge(eOrg);
+            var eNew = MakeEdge(eOrg);
             var eNewSym = eNew._Sym;
 
             // Connect the new edge appropriately
@@ -306,7 +382,7 @@ namespace LibTessDotNet
         /// </summary>
         public MeshUtils.Edge Connect(MeshUtils.Edge eOrg, MeshUtils.Edge eDst)
         {
-            var eNew = MeshUtils.MakeEdge(eOrg);
+            var eNew = MakeEdge(eOrg);
             var eNewSym = eNew._Sym;
 
             bool joiningLoops = false;
