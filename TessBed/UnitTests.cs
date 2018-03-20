@@ -32,6 +32,61 @@ namespace TessBed
             public int[] Indices;
         }
 
+        public class TestPool : IPool
+        {
+            private IDictionary<Type, int> _newCount = new Dictionary<Type, int>();
+            private IDictionary<Type, int> _freeCount = new Dictionary<Type, int>();
+            private IDictionary<object, string> _stacks = new Dictionary<object, string>();
+
+            public override T Get<T>()
+            {
+                if (!_newCount.ContainsKey(typeof(T)))
+                {
+                    _newCount.Add(typeof(T), 0);
+                }
+                _newCount[typeof(T)]++;
+                var obj = new T();
+                obj.Init(this);
+                _stacks[obj] = System.Environment.StackTrace;
+                return obj;
+            }
+
+            public override void Register<T>(ITypePool typePool)
+            {
+            }
+
+            public override void Return<T>(T obj)
+            {
+                if (obj == null)
+                {
+                    return;
+                }
+                obj.Reset(this);
+                _stacks.Remove(obj);
+                if (!_freeCount.ContainsKey(typeof(T)))
+                {
+                    _freeCount.Add(typeof(T), 0);
+                }
+                _freeCount[typeof(T)]++;
+                if (_freeCount[typeof(T)] > _newCount[typeof(T)])
+                {
+                    throw new InvalidOperationException();
+                }
+            }
+
+            public void AssertCounts()
+            {
+                foreach (var stack in _stacks)
+                {
+                    System.Diagnostics.Debug.WriteLine("Not freed: {0}, allocated from\n{1}", stack.Key.GetType().Name, stack.Value);
+                }
+                foreach (var type in _newCount)
+                {
+                    Assert.AreEqual(type.Value, _freeCount[type.Key], type.Key.ToString());
+                }
+            }
+        }
+
         public bool OutputTestData = false;
         public static string TestDataPath = Path.Combine("..", "..", "TessBed", "TestData");
 
@@ -45,7 +100,8 @@ namespace TessBed
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(data)))
             {
                 var pset = DataLoader.LoadDat(stream);
-                var tess = new Tess();
+                var pool = new TestPool();
+                var tess = new Tess(pool);
 
                 PolyConvert.ToTess(pset, tess);
                 tess.Tessellate(WindingRule.EvenOdd, ElementType.Polygons, 3);
@@ -61,6 +117,7 @@ namespace TessBed
                 }
 
                 Assert.AreEqual(expectedIndices, indices.ToArray());
+                pool.AssertCounts();
             }
         }
 
@@ -180,7 +237,8 @@ namespace TessBed
         public void Tessellate_WithAsset_ReturnsExpectedTriangulation(TestCaseData data)
         {
             var pset = _loader.GetAsset(data.AssetName).Polygons;
-            var tess = new Tess();
+            var pool = new TestPool();
+            var tess = new Tess(pool);
             PolyConvert.ToTess(pset, tess);
             tess.Tessellate(data.Winding, ElementType.Polygons, data.ElementSize);
 
@@ -200,17 +258,7 @@ namespace TessBed
             }
 
             Assert.AreEqual(testData.Indices, indices.ToArray());
-            AssertPooling();
-        }
-
-        private void AssertPooling()
-        {
-#if DEBUG
-            Assert.AreEqual(MeshUtils.Vertex.InvokedCreateCount, MeshUtils.Vertex.InvokedFreeCount);
-            Assert.AreEqual(MeshUtils.Face.InvokedCreateCount, MeshUtils.Face.InvokedFreeCount);
-            Assert.AreEqual(MeshUtils.EdgePair.InvokedCreateCount, MeshUtils.EdgePair.InvokedFreeCount);
-            Assert.AreEqual(MeshUtils.Edge.InvokedCreateCount, MeshUtils.Edge.InvokedFreeCount);
-#endif
+            pool.AssertCounts();
         }
 
         public TestData ParseTestData(WindingRule winding, int elementSize, Stream resourceStream)

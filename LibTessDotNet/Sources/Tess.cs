@@ -80,6 +80,7 @@ namespace LibTessDotNet
 
     public partial class Tess
     {
+        private IPool _pool;
         private Mesh _mesh;
         private Vec3 _normal;
         private Vec3 _sUnit;
@@ -114,8 +115,10 @@ namespace LibTessDotNet
         /// If true, will remove empty (zero area) polygons.
         /// </summary>
         public bool NoEmptyPolygons = false;        /// <summary>
+        /// OBSOLETE: use the IPool constructor to disable pooling by passing null.
         /// If true, will use pooling to reduce GC (compare performance with/without, can vary wildly).
         /// </summary>
+        [Obsolete]
         public bool UsePooling = true;
 
         public ContourVertex[] Vertices { get { return _vertices; } }
@@ -125,11 +128,21 @@ namespace LibTessDotNet
         public int ElementCount { get { return _elementCount; } }
 
         public Tess()
+            : this(new DefaultPool())
+        {
+        }
+
+        public Tess(IPool pool)
         {
             _normal = Vec3.Zero;
             _bminX = _bminY = _bmaxX = _bmaxY = 0;
 
             _windingRule = WindingRule.EvenOdd;
+            _pool = pool;
+            if (_pool == null)
+            {
+                _pool = new NullPool();
+            }
             _mesh = null;
 
             _vertices = null;
@@ -328,7 +341,7 @@ namespace LibTessDotNet
                     while (lo._Lnext != up && (Geom.EdgeGoesLeft(lo._Lnext)
                         || Geom.EdgeSign(lo._Org, lo._Dst, lo._Lnext._Dst) <= 0.0f))
                     {
-                        lo = _mesh.Connect(lo._Lnext, lo)._Sym;
+                        lo = _mesh.Connect(_pool, lo._Lnext, lo)._Sym;
                     }
                     lo = lo._Lprev;
                 }
@@ -338,7 +351,7 @@ namespace LibTessDotNet
                     while (lo._Lnext != up && (Geom.EdgeGoesRight(up._Lprev)
                         || Geom.EdgeSign(up._Dst, up._Org, up._Lprev._Org) >= 0.0f))
                     {
-                        up = _mesh.Connect(up, up._Lprev)._Sym;
+                        up = _mesh.Connect(_pool, up, up._Lprev)._Sym;
                     }
                     up = up._Lnext;
                 }
@@ -349,7 +362,7 @@ namespace LibTessDotNet
             Debug.Assert(lo._Lnext != up);
             while (lo._Lnext._Lnext != up)
             {
-                lo = _mesh.Connect(lo._Lnext, lo)._Sym;
+                lo = _mesh.Connect(_pool, lo._Lnext, lo)._Sym;
             }
         }
 
@@ -387,7 +400,7 @@ namespace LibTessDotNet
                 // Since f will be destroyed, save its next pointer.
                 next = f._next;
                 if( ! f._inside ) {
-                    _mesh.ZapFace(f);
+                    _mesh.ZapFace(_pool, f);
                 }
             }
         }
@@ -424,7 +437,7 @@ namespace LibTessDotNet
                     }
                     else
                     {
-                        _mesh.Delete(e);
+                        _mesh.Delete(_pool, e);
                     }
                 }
             }
@@ -457,7 +470,7 @@ namespace LibTessDotNet
             // Try to merge as many polygons as possible
             if (polySize > 3)
             {
-                _mesh.MergeConvexFaces(polySize);
+                _mesh.MergeConvexFaces(_pool, polySize);
             }
 
             // Mark unused
@@ -645,8 +658,7 @@ namespace LibTessDotNet
         {
             if (_mesh == null)
             {
-                _mesh = Mesh.Create();
-                _mesh.Init();
+                _mesh = _pool.Get<Mesh>();
             }
 
             bool reverse = false;
@@ -661,14 +673,14 @@ namespace LibTessDotNet
             {
                 if (e == null)
                 {
-                    e = _mesh.MakeEdge();
-                    _mesh.Splice(e, e._Sym);
+                    e = _mesh.MakeEdge(_pool);
+                    _mesh.Splice(_pool, e, e._Sym);
                 }
                 else
                 {
                     // Create a new vertex and edge which immediately follow e
                     // in the ordering around the left face.
-                    _mesh.SplitEdge(e);
+                    _mesh.SplitEdge(_pool, e);
                     e = e._Lnext;
                 }
 
@@ -739,10 +751,7 @@ namespace LibTessDotNet
                 OutputPolymesh(elementType, polySize);
             }
 
-            if (UsePooling)
-            {
-                _mesh.Free();
-            }
+            _pool.Return(_mesh);
             _mesh = null;
         }
     }

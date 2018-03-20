@@ -44,12 +44,27 @@ namespace LibTessDotNet
 {
     public partial class Tess
     {
-        internal class ActiveRegion
+        internal class ActiveRegion : Pooled<ActiveRegion>
         {
             internal MeshUtils.Edge _eUp;
             internal Dict<ActiveRegion>.Node _nodeUp;
             internal int _windingNumber;
             internal bool _inside, _sentinel, _dirty, _fixUpperEdge;
+
+            public void Init(IPool pool)
+            {
+            }
+
+            public void Reset(IPool pool)
+            {
+                _eUp = null;
+                _nodeUp = null;
+                _windingNumber = 0;
+                _inside = false;
+                _sentinel = false;
+                _dirty = false;
+                _fixUpperEdge = false;
+            }
         }
 
         private ActiveRegion RegionBelow(ActiveRegion reg)
@@ -114,6 +129,7 @@ namespace LibTessDotNet
             }
             reg._eUp._activeRegion = null;
             _dict.Remove(reg._nodeUp);
+            _pool.Return(reg);
         }
 
         /// <summary>
@@ -122,7 +138,7 @@ namespace LibTessDotNet
         private void FixUpperEdge(ActiveRegion reg, MeshUtils.Edge newEdge)
         {
             Debug.Assert(reg._fixUpperEdge);
-            _mesh.Delete(reg._eUp);
+            _mesh.Delete(_pool, reg._eUp);
             reg._fixUpperEdge = false;
             reg._eUp = newEdge;
             newEdge._activeRegion = reg;
@@ -141,7 +157,7 @@ namespace LibTessDotNet
             // now is the time to fix it.
             if (reg._fixUpperEdge)
             {
-                var e = _mesh.Connect(RegionBelow(reg)._eUp._Sym, reg._eUp._Lnext);
+                var e = _mesh.Connect(_pool, RegionBelow(reg)._eUp._Sym, reg._eUp._Lnext);
                 FixUpperEdge(reg, e);
                 reg = RegionAbove(reg);
             }
@@ -169,7 +185,7 @@ namespace LibTessDotNet
         /// </summary>
         private ActiveRegion AddRegionBelow(ActiveRegion regAbove, MeshUtils.Edge eNewUp)
         {
-            var regNew = new ActiveRegion();
+            var regNew = _pool.Get<ActiveRegion>();
 
             regNew._eUp = eNewUp;
             regNew._nodeUp = _dict.InsertBefore(regAbove._nodeUp, regNew);
@@ -241,15 +257,15 @@ namespace LibTessDotNet
                     }
                     // If the edge below was a temporary edge introduced by
                     // ConnectRightVertex, now is the time to fix it.
-                    e = _mesh.Connect(ePrev._Lprev, e._Sym);
+                    e = _mesh.Connect(_pool, ePrev._Lprev, e._Sym);
                     FixUpperEdge(reg, e);
                 }
 
                 // Relink edges so that ePrev.Onext == e
                 if (ePrev._Onext != e)
                 {
-                    _mesh.Splice(e._Oprev, e);
-                    _mesh.Splice(ePrev, e);
+                    _mesh.Splice(_pool, e._Oprev, e);
+                    _mesh.Splice(_pool, ePrev, e);
                 }
                 FinishRegion(regPrev); // may change reg.eUp
                 ePrev = reg._eUp;
@@ -299,8 +315,8 @@ namespace LibTessDotNet
                 if (e._Onext != ePrev)
                 {
                     // Unlink e from its current position, and relink below ePrev
-                    _mesh.Splice(e._Oprev, e);
-                    _mesh.Splice(ePrev._Oprev, e);
+                    _mesh.Splice(_pool, e._Oprev, e);
+                    _mesh.Splice(_pool, ePrev._Oprev, e);
                 }
                 // Compute the winding number and "inside" flag for the new regions
                 reg._windingNumber = regPrev._windingNumber - e._winding;
@@ -313,7 +329,7 @@ namespace LibTessDotNet
                 {
                     Geom.AddWinding(e, ePrev);
                     DeleteRegion(regPrev);
-                    _mesh.Delete(ePrev);
+                    _mesh.Delete(_pool, ePrev);
                 }
                 firstTime = false;
                 regPrev = reg;
@@ -335,7 +351,7 @@ namespace LibTessDotNet
         /// </summary>
         private void SpliceMergeVertices(MeshUtils.Edge e1, MeshUtils.Edge e2)
         {
-            _mesh.Splice(e1, e2);
+            _mesh.Splice(_pool, e1, e2);
         }
 
         /// <summary>
@@ -422,8 +438,8 @@ namespace LibTessDotNet
                 if (!Geom.VertEq(eUp._Org, eLo._Org))
                 {
                     // Splice eUp._Org into eLo
-                    _mesh.SplitEdge(eLo._Sym);
-                    _mesh.Splice(eUp, eLo._Oprev);
+                    _mesh.SplitEdge(_pool, eLo._Sym);
+                    _mesh.Splice(_pool, eUp, eLo._Oprev);
                     regUp._dirty = regLo._dirty = true;
                 }
                 else if (eUp._Org != eLo._Org)
@@ -442,8 +458,8 @@ namespace LibTessDotNet
 
                 // eLo.Org appears to be above eUp, so splice eLo.Org into eUp
                 RegionAbove(regUp)._dirty = regUp._dirty = true;
-                _mesh.SplitEdge(eUp._Sym);
-                _mesh.Splice(eLo._Oprev, eUp);
+                _mesh.SplitEdge(_pool, eUp._Sym);
+                _mesh.Splice(_pool, eLo._Oprev, eUp);
             }
             return true;
         }
@@ -483,8 +499,8 @@ namespace LibTessDotNet
 
                 // eLo.Dst is above eUp, so splice eLo.Dst into eUp
                 RegionAbove(regUp)._dirty = regUp._dirty = true;
-                var e = _mesh.SplitEdge(eUp);
-                _mesh.Splice(eLo._Sym, e);
+                var e = _mesh.SplitEdge(_pool, eUp);
+                _mesh.Splice(_pool, eLo._Sym, e);
                 e._Lface._inside = regUp._inside;
             }
             else
@@ -496,8 +512,8 @@ namespace LibTessDotNet
 
                 // eUp.Dst is below eLo, so splice eUp.Dst into eLo
                 regUp._dirty = regLo._dirty = true;
-                var e = _mesh.SplitEdge(eLo);
-                _mesh.Splice(eUp._Lnext, eLo._Sym);
+                var e = _mesh.SplitEdge(_pool, eLo);
+                _mesh.Splice(_pool, eUp._Lnext, eLo._Sym);
                 e._Rface._inside = regUp._inside;
             }
             return true;
@@ -559,7 +575,7 @@ namespace LibTessDotNet
 
             // At this point the edges intersect, at least marginally
 
-            var isect = new MeshUtils.Vertex(); // (without pool because of stack scope)
+            var isect = _pool.Get<MeshUtils.Vertex>();
             Geom.EdgeIntersect(dstUp, orgUp, dstLo, orgLo, isect);
             // The following properties are guaranteed:
             Debug.Assert(Math.Min(orgUp._t, dstUp._t) <= isect._t);
@@ -593,6 +609,7 @@ namespace LibTessDotNet
             {
                 // Easy case -- intersection at one of the right endpoints
                 CheckForRightSplice(regUp);
+                _pool.Return(isect);
                 return false;
             }
 
@@ -607,24 +624,26 @@ namespace LibTessDotNet
                 if (dstLo == _event)
                 {
                     // Splice dstLo into eUp, and process the new region(s)
-                    _mesh.SplitEdge(eUp._Sym);
-                    _mesh.Splice(eLo._Sym, eUp);
+                    _mesh.SplitEdge(_pool, eUp._Sym);
+                    _mesh.Splice(_pool, eLo._Sym, eUp);
                     regUp = TopLeftRegion(regUp);
                     eUp = RegionBelow(regUp)._eUp;
                     FinishLeftRegions(RegionBelow(regUp), regLo);
                     AddRightEdges(regUp, eUp._Oprev, eUp, eUp, true);
+                    _pool.Return(isect);
                     return true;
                 }
                 if( dstUp == _event ) {
                     /* Splice dstUp into eLo, and process the new region(s) */
-                    _mesh.SplitEdge(eLo._Sym);
-                    _mesh.Splice(eUp._Lnext, eLo._Oprev);
+                    _mesh.SplitEdge(_pool, eLo._Sym);
+                    _mesh.Splice(_pool, eUp._Lnext, eLo._Oprev);
                     regLo = regUp;
                     regUp = TopRightRegion(regUp);
                     var e = RegionBelow(regUp)._eUp._Rprev;
                     regLo._eUp = eLo._Oprev;
                     eLo = FinishLeftRegions(regLo, null);
                     AddRightEdges(regUp, eLo._Onext, eUp._Rprev, e, true);
+                    _pool.Return(isect);
                     return true;
                 }
                 // Special case: called from ConnectRightVertex. If either
@@ -633,18 +652,19 @@ namespace LibTessDotNet
                 if (Geom.EdgeSign( dstUp, _event, isect ) >= 0.0f)
                 {
                     RegionAbove(regUp)._dirty = regUp._dirty = true;
-                    _mesh.SplitEdge(eUp._Sym);
+                    _mesh.SplitEdge(_pool, eUp._Sym);
                     eUp._Org._s = _event._s;
                     eUp._Org._t = _event._t;
                 }
                 if (Geom.EdgeSign(dstLo, _event, isect) <= 0.0f)
                 {
                     regUp._dirty = regLo._dirty = true;
-                    _mesh.SplitEdge(eLo._Sym);
+                    _mesh.SplitEdge(_pool, eLo._Sym);
                     eLo._Org._s = _event._s;
                     eLo._Org._t = _event._t;
                 }
                 // leave the rest for ConnectRightVertex
+                _pool.Return(isect);
                 return false;
             }
 
@@ -655,11 +675,13 @@ namespace LibTessDotNet
             // the new face.  We expect the faces in the processed part of
             // the mesh (ie. eUp._Lface) to be smaller than the faces in the
             // unprocessed original contours (which will be eLo._Oprev._Lface).
-            _mesh.SplitEdge(eUp._Sym);
-            _mesh.SplitEdge(eLo._Sym);
-            _mesh.Splice(eLo._Oprev, eUp);
+            _mesh.SplitEdge(_pool, eUp._Sym);
+            _mesh.SplitEdge(_pool, eLo._Sym);
+            _mesh.Splice(_pool, eLo._Oprev, eUp);
             eUp._Org._s = isect._s;
             eUp._Org._t = isect._t;
+            _pool.Return(isect);
+            isect = null;
             eUp._Org._pqHandle = _pq.Insert(eUp._Org);
             if (eUp._Org._pqHandle._handle == PQHandle.Invalid)
             {
@@ -717,14 +739,14 @@ namespace LibTessDotNet
                         if (regLo._fixUpperEdge)
                         {
                             DeleteRegion(regLo);
-                            _mesh.Delete(eLo);
+                            _mesh.Delete(_pool, eLo);
                             regLo = RegionBelow(regUp);
                             eLo = regLo._eUp;
                         }
                         else if( regUp._fixUpperEdge )
                         {
                             DeleteRegion(regUp);
-                            _mesh.Delete(eUp);
+                            _mesh.Delete(_pool, eUp);
                             regUp = RegionAbove(regLo);
                             eUp = regUp._eUp;
                         }
@@ -761,7 +783,7 @@ namespace LibTessDotNet
                     // A degenerate loop consisting of only two edges -- delete it.
                     Geom.AddWinding(eLo, eUp);
                     DeleteRegion(regUp);
-                    _mesh.Delete(eUp);
+                    _mesh.Delete(_pool, eUp);
                     regUp = RegionAbove(regLo);
                 }
             }
@@ -815,7 +837,7 @@ namespace LibTessDotNet
             // through vEvent, or may coincide with new intersection vertex
             if (Geom.VertEq(eUp._Org, _event))
             {
-                _mesh.Splice(eTopLeft._Oprev, eUp);
+                _mesh.Splice(_pool, eTopLeft._Oprev, eUp);
                 regUp = TopLeftRegion(regUp);
                 eTopLeft = RegionBelow(regUp)._eUp;
                 FinishLeftRegions(RegionBelow(regUp), regLo);
@@ -823,7 +845,7 @@ namespace LibTessDotNet
             }
             if (Geom.VertEq(eLo._Org, _event))
             {
-                _mesh.Splice(eBottomLeft, eLo._Oprev);
+                _mesh.Splice(_pool, eBottomLeft, eLo._Oprev);
                 eBottomLeft = FinishLeftRegions(regLo, null);
                 degenerate = true;
             }
@@ -844,7 +866,7 @@ namespace LibTessDotNet
             {
                 eNew = eUp;
             }
-            eNew = _mesh.Connect(eBottomLeft._Lprev, eNew);
+            eNew = _mesh.Connect(_pool, eBottomLeft._Lprev, eNew);
 
             // Prevent cleanup, otherwise eNew might disappear before we've even
             // had a chance to mark it as a temporary edge.
@@ -873,14 +895,14 @@ namespace LibTessDotNet
             if (!Geom.VertEq(e._Dst, vEvent))
             {
                 // General case -- splice vEvent into edge e which passes through it
-                _mesh.SplitEdge(e._Sym);
+                _mesh.SplitEdge(_pool, e._Sym);
                 if (regUp._fixUpperEdge)
                 {
                     // This edge was fixable -- delete unused portion of original edge
-                    _mesh.Delete(e._Onext);
+                    _mesh.Delete(_pool, e._Onext);
                     regUp._fixUpperEdge = false;
                 }
-                _mesh.Splice(vEvent._anEdge, e);
+                _mesh.Splice(_pool, vEvent._anEdge, e);
                 SweepEvent(vEvent);	// recurse
                 return;
             }
@@ -906,11 +928,12 @@ namespace LibTessDotNet
         /// </summary>
         private void ConnectLeftVertex(MeshUtils.Vertex vEvent)
         {
-            var tmp = new ActiveRegion();
+            var tmp = _pool.Get<ActiveRegion>();
 
             // Get a pointer to the active region containing vEvent
             tmp._eUp = vEvent._anEdge._Sym;
             var regUp = _dict.Find(tmp).Key;
+            _pool.Return(tmp);
             var regLo = RegionBelow(regUp);
             if (regLo == null)
             {
@@ -936,11 +959,11 @@ namespace LibTessDotNet
                 MeshUtils.Edge eNew;
                 if (reg == regUp)
                 {
-                    eNew = _mesh.Connect(vEvent._anEdge._Sym, eUp._Lnext);
+                    eNew = _mesh.Connect(_pool, vEvent._anEdge._Sym, eUp._Lnext);
                 }
                 else
                 {
-                    eNew = _mesh.Connect(eLo._Dnext, vEvent._anEdge)._Sym;
+                    eNew = _mesh.Connect(_pool, eLo._Dnext, vEvent._anEdge)._Sym;
                 }
                 if (reg._fixUpperEdge)
                 {
@@ -1018,14 +1041,14 @@ namespace LibTessDotNet
         /// </summary>
         private void AddSentinel(Real smin, Real smax, Real t)
         {
-            var e = _mesh.MakeEdge();
+            var e = _mesh.MakeEdge(_pool);
             e._Org._s = smax;
             e._Org._t = t;
             e._Dst._s = smin;
             e._Dst._t = t;
             _event = e._Dst; // initialize it
 
-            var reg = new ActiveRegion();
+            var reg = _pool.Get<ActiveRegion>();
             reg._eUp = e;
             reg._windingNumber = 0;
             reg._inside = false;
@@ -1086,7 +1109,7 @@ namespace LibTessDotNet
                     // Zero-length edge, contour has at least 3 edges
 
                     SpliceMergeVertices(eLnext, e);	// deletes e.Org
-                    _mesh.Delete(e); // e is a self-loop
+                    _mesh.Delete(_pool, e); // e is a self-loop
                     e = eLnext;
                     eLnext = e._Lnext;
                 }
@@ -1100,13 +1123,13 @@ namespace LibTessDotNet
                         {
                             eNext = eNext._next;
                         }
-                        _mesh.Delete(eLnext);
+                        _mesh.Delete(_pool, eLnext);
                     }
                     if (e == eNext || e == eNext._Sym)
                     {
                         eNext = eNext._next;
                     }
-                    _mesh.Delete(e);
+                    _mesh.Delete(_pool, e);
                 }
             }
         }
@@ -1174,7 +1197,7 @@ namespace LibTessDotNet
                 {
                     // A face with only two edges
                     Geom.AddWinding(e._Onext, e);
-                    _mesh.Delete(e);
+                    _mesh.Delete(_pool, e);
                 }
             }
         }
@@ -1201,8 +1224,8 @@ namespace LibTessDotNet
             MeshUtils.Vertex v, vNext;
             while ((v = _pq.ExtractMin()) != null)
             {
-                 while (true)
-                 {
+                while (true)
+                {
                     vNext = _pq.Minimum();
                     if (vNext == null || !Geom.VertEq(vNext, v))
                     {
