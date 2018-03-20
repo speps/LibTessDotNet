@@ -36,7 +36,6 @@ namespace TessBed
         {
             private IDictionary<Type, int> _newCount = new Dictionary<Type, int>();
             private IDictionary<Type, int> _freeCount = new Dictionary<Type, int>();
-            private IDictionary<object, string> _stacks = new Dictionary<object, string>();
 
             public override T Get<T>()
             {
@@ -47,7 +46,6 @@ namespace TessBed
                 _newCount[typeof(T)]++;
                 var obj = new T();
                 obj.Init(this);
-                _stacks[obj] = System.Environment.StackTrace;
                 return obj;
             }
 
@@ -62,7 +60,6 @@ namespace TessBed
                     return;
                 }
                 obj.Reset(this);
-                _stacks.Remove(obj);
                 if (!_freeCount.ContainsKey(typeof(T)))
                 {
                     _freeCount.Add(typeof(T), 0);
@@ -76,10 +73,6 @@ namespace TessBed
 
             public void AssertCounts()
             {
-                foreach (var stack in _stacks)
-                {
-                    System.Diagnostics.Debug.WriteLine("Not freed: {0}, allocated from\n{1}", stack.Key.GetType().Name, stack.Value);
-                }
                 foreach (var type in _newCount)
                 {
                     Assert.AreEqual(type.Value, _freeCount[type.Key], type.Key.ToString());
