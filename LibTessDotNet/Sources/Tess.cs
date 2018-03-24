@@ -705,7 +705,7 @@ namespace LibTessDotNet
 
         public void Tessellate(WindingRule windingRule, ElementType elementType, int polySize, CombineCallback combineCallback)
         {
-            Tessellate(windingRule, elementType, polySize, null, Vec3.Zero);
+            Tessellate(windingRule, elementType, polySize, combineCallback, Vec3.Zero);
         }
 
         public void Tessellate(WindingRule windingRule, ElementType elementType, int polySize, CombineCallback combineCallback, Vec3 normal)
