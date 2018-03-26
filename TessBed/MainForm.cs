@@ -3,18 +3,19 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using LibTessDotNet;
 using System.Drawing;
+using System.IO;
 
 namespace TessBed
 {
     public partial class MainForm : Form
     {
         DataLoader _data = new DataLoader();
-        string[] _assets;
         string[] _windingRules;
         WindingRule _windingRule;
         int _polySize;
 
         Canvas _canvas;
+        PolygonSet _polys;
         Stopwatch _sw = new Stopwatch();
         Tess _tess = new Tess();
 
@@ -26,13 +27,18 @@ namespace TessBed
             _canvas.Dock = DockStyle.Fill;
             panel.Controls.Add(_canvas);
 
-            _assets = _data.AssetNames;
-            Array.Sort(_assets);
-            foreach (var asset in _assets)
+            foreach (var asset in _data.Assets)
             {
                 toolStripAssets.Items.Add(asset);
             }
-            toolStripAssets.SelectedIndexChanged += delegate(object sender, EventArgs e) { RefreshAsset(toolStripAssets.SelectedIndex); };
+            toolStripAssets.SelectedIndexChanged += delegate(object sender, EventArgs e) {
+                if (toolStripAssets.SelectedIndex >= 0)
+                {
+                    var asset = toolStripAssets.SelectedItem as DataLoader.Asset;
+                    _polys = asset.Polygons;
+                    RefreshCanvas();
+                }
+            };
 
             _windingRules = Enum.GetNames(typeof(WindingRule));
             foreach (var windingRule in _windingRules)
@@ -41,10 +47,7 @@ namespace TessBed
             }
             toolStripWinding.SelectedIndexChanged += delegate(object sender, EventArgs e) {
                 _windingRule = (WindingRule)toolStripWinding.SelectedIndex;
-                if (toolStripAssets.SelectedIndex >= 0)
-                {
-                    RefreshAsset(toolStripAssets.SelectedIndex);
-                }
+                RefreshCanvas();
             };
 
             toolStripPolySize.KeyDown += delegate(object sender, KeyEventArgs e)
@@ -63,19 +66,19 @@ namespace TessBed
             {
                 _canvas.ShowInput = toolStripButtonShowInput.Checked;
                 toolStripButtonShowWinding.Enabled = _canvas.ShowInput;
-                RefreshAsset(toolStripAssets.SelectedIndex);
+                RefreshCanvas();
             };
 
             toolStripButtonShowWinding.CheckedChanged += delegate(object sender, EventArgs e)
             {
                 _canvas.ShowWinding = toolStripButtonShowWinding.Checked;
-                RefreshAsset(toolStripAssets.SelectedIndex);
+                RefreshCanvas();
             };
 
             toolStripButtonNoEmpty.CheckedChanged += delegate(object sender, EventArgs e)
             {
                 _tess.NoEmptyPolygons = toolStripButtonNoEmpty.Checked;
-                RefreshAsset(toolStripAssets.SelectedIndex);
+                RefreshCanvas();
             };
 
             toolStripButtonBench.Click += delegate(object sender, EventArgs e)
@@ -83,7 +86,7 @@ namespace TessBed
                 new BenchForm().ShowDialog(this);
             };
 
-            toolStripButtonOpen.Click += delegate(object sender, EventArgs e)
+            toolStripButtonFile.Click += delegate(object sender, EventArgs e)
             {
                 var dialog = new OpenFileDialog();
                 dialog.Filter = "Test Files (*.dat)|*.dat|All Files (*.*)|*.*";
@@ -92,8 +95,37 @@ namespace TessBed
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     var polygons = DataLoader.LoadDat(dialog.OpenFile());
-                    RefreshAsset(polygons);
+                    _polys = polygons;
+                    RefreshCanvas();
                     toolStripAssets.SelectedIndex = -1;
+                }
+            };
+
+            toolStripButtonFolder.Click += delegate (object sender, EventArgs e)
+            {
+                var dialog = new FolderBrowserDialog();
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    var files = Directory.GetFiles(dialog.SelectedPath, "*.dat");
+                    if (files.Length > 0)
+                    {
+                        toolStripAssets.Items.Clear();
+                        _polys = null;
+                        foreach (var file in files)
+                        {
+                            using (var stream = new FileStream(file, FileMode.Open))
+                            {
+                                var polygons = DataLoader.LoadDat(stream);
+                                if (_polys == null)
+                                {
+                                    _polys = polygons;
+                                }
+                                toolStripAssets.Items.Add(new DataLoader.Asset() { Name = Path.GetFileName(file), Polygons = polygons });
+                            }
+                        }
+                        toolStripAssets.SelectedIndex = 0;
+                        RefreshCanvas();
+                    }
                 }
             };
 
@@ -106,14 +138,16 @@ namespace TessBed
 
         private void SetAsset(string name)
         {
-            for (int i = 0; i < _assets.Length; i++)
+            for (int i = 0; i < toolStripAssets.Items.Count; i++)
             {
-                if (_assets[i] == name)
+                var item = toolStripAssets.Items[i] as DataLoader.Asset;
+                if (item != null && item.Name == name)
                 {
                     toolStripAssets.SelectedIndex = i;
-                    break;
+                    return;
                 }
             }
+            toolStripAssets.SelectedIndex = -1;
         }
 
         private void SetWindingRule(WindingRule windingRule)
@@ -150,7 +184,7 @@ namespace TessBed
                     toolStripPolySize.Text = _polySize.ToString();
                 }
             }
-            RefreshAsset(toolStripAssets.SelectedIndex);
+            RefreshCanvas();
         }
 
         private void SetPolySize(int polySize)
@@ -161,15 +195,6 @@ namespace TessBed
             }
             toolStripPolySize.Text = polySize.ToString();
             PolySizeEvent();
-        }
-
-        private void RefreshAsset(int index)
-        {
-            if (index >= 0)
-            {
-                var asset = _data.GetAsset(_assets[index]);
-                RefreshAsset(asset.Polygons);
-            }
         }
 
         private Vec3 Project(Vec3 v)
@@ -206,11 +231,19 @@ namespace TessBed
             return Color.FromArgb((int)rgba[3], (int)rgba[0], (int)rgba[1], (int)rgba[2]);
         }
 
-        private void RefreshAsset(PolygonSet polygons)
+        private void RefreshCanvas()
         {
+            if (_polys == null)
+            {
+                _canvas.Input = null;
+                _canvas.Output = null;
+                _canvas.Invalidate();
+                return;
+            }
+
             _sw.Reset();
 
-            foreach (var poly in polygons)
+            foreach (var poly in _polys)
             {
                 var v = new ContourVertex[poly.Count];
                 for (int i = 0; i < poly.Count; i++)
@@ -248,7 +281,7 @@ namespace TessBed
             }
 
             var input = new PolygonSet();
-            foreach (var poly in polygons)
+            foreach (var poly in _polys)
             {
                 var projPoly = new Polygon();
                 for (int i = 0; i < poly.Count; i++)
@@ -265,9 +298,6 @@ namespace TessBed
             }
 
             statusMain.Text = string.Format("{0:F3} ms - {1} polygons (of {2} vertices) {3}", _sw.Elapsed.TotalMilliseconds, _tess.ElementCount, _polySize, _polySize == 3 ? "... triangles" : "");
-
-            /*string debugBalance = DebugPoolBalanceChecker.GetDebugAboutPoolBalanceAll();
-            if (!debugBalance.Equals("")) MessageBox.Show("debugBalance: " + debugBalance);*/
 
             _canvas.Input = input;
             _canvas.Output = output;

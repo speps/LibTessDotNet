@@ -44,6 +44,11 @@ namespace TessBed
         {
             public string Name;
             public PolygonSet Polygons;
+
+            public override string ToString()
+            {
+                return Name;
+            }
         }
 
         public static PolygonSet LoadDat(Stream resourceStream)
@@ -146,15 +151,12 @@ namespace TessBed
         }
 
         Dictionary<string, Asset> _assets = new Dictionary<string, Asset>();
-        public string[] AssetNames
+
+        public Asset[] Assets
         {
             get
             {
-                var names = new string[_assets.Count];
-                int i = 0;
-                foreach (var name in _assets.Keys)
-                    names[i++] = name;
-                return names;
+                return _assets.Values.ToArray();
             }
         }
 
@@ -165,19 +167,11 @@ namespace TessBed
                 var ext = Path.GetExtension(name);
                 if (ext == ".dat")
                 {
-                    _assets.Add(name.Split('.').Reverse().Skip(1).FirstOrDefault(), new Asset { Name = name });
+                    var assetName = name.Split('.').Skip(2).Reverse().Skip(1).FirstOrDefault();
+                    var polys = LoadDat(Assembly.GetExecutingAssembly().GetManifestResourceStream(name));
+                    _assets.Add(assetName, new Asset { Name = assetName, Polygons = polys });
                 }
             }
-        }
-
-        public Asset GetAsset(string name)
-        {
-            var asset = _assets[name];
-            if (asset.Polygons == null)
-            {
-                asset.Polygons = LoadDat(Assembly.GetExecutingAssembly().GetManifestResourceStream(asset.Name));
-            }
-            return asset;
         }
     }
 }

@@ -107,19 +107,19 @@ namespace TessBed
             Invoke(new Action(() => { toolStripButtonStart.Enabled = false; }));
 
             var results = new List<TestResult>();
-            var names = _data.AssetNames;
-            for (int i = 0; i < names.Length; i++)
+            var assets = _data.Assets;
+            for (int i = 0; i < assets.Length; i++)
             {
-                var asset = _data.GetAsset(names[i]);
+                var asset = assets[i];
                 var testResult = new TestResult();
-                testResult.Name = names[i];
+                testResult.Name = asset.Name;
                 foreach (var lib in _libs)
                 {
                     var libResult = lib.Triangulate(asset.Polygons, _loops);
                     testResult.Libs.Add(libResult);
                 }
                 results.Add(testResult);
-                _bgWorker.ReportProgress(i * 100 / names.Length);
+                _bgWorker.ReportProgress(i * 100 / assets.Length);
             }
             _bgWorker.ReportProgress(100);
             e.Result = results;

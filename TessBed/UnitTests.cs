@@ -16,13 +16,13 @@ namespace TessBed
 
         public struct TestCaseData
         {
-            public string AssetName;
+            public DataLoader.Asset Asset;
             public WindingRule Winding;
             public int ElementSize;
 
             public override string ToString()
             {
-                return string.Format("{0}, {1}, {2}", Winding, AssetName, ElementSize);
+                return string.Format("{0}, {1}, {2}", Winding, Asset.Name, ElementSize);
             }
         }
 
@@ -229,13 +229,13 @@ namespace TessBed
         [Test, TestCaseSource("GetTestCaseData")]
         public void Tessellate_WithAsset_ReturnsExpectedTriangulation(TestCaseData data)
         {
-            var pset = _loader.GetAsset(data.AssetName).Polygons;
+            var pset = data.Asset.Polygons;
             var pool = new TestPool();
             var tess = new Tess(pool);
             PolyConvert.ToTess(pset, tess);
             tess.Tessellate(data.Winding, ElementType.Polygons, data.ElementSize);
 
-            var resourceName = Assembly.GetExecutingAssembly().GetName().Name + ".TestData." + data.AssetName + ".testdat";
+            var resourceName = Assembly.GetExecutingAssembly().GetName().Name + ".TestData." + data.Asset.Name + ".testdat";
             var testData = ParseTestData(data.Winding, data.ElementSize, Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName));
             Assert.IsNotNull(testData);
             Assert.AreEqual(testData.ElementSize, data.ElementSize);
@@ -306,9 +306,9 @@ namespace TessBed
 
         public static void GenerateTestData()
         {
-            foreach (var name in _loader.AssetNames)
+            foreach (var asset in _loader.Assets)
             {
-                var pset = _loader.GetAsset(name).Polygons;
+                var pset = asset.Polygons;
 
                 var lines = new List<string>();
                 var indices = new List<int>();
@@ -333,7 +333,7 @@ namespace TessBed
                     lines.Add("");
                 }
 
-                File.WriteAllLines(Path.Combine(TestDataPath, name + ".testdat"), lines);
+                File.WriteAllLines(Path.Combine(TestDataPath, asset.Name + ".testdat"), lines);
             }
         }
 
@@ -342,9 +342,9 @@ namespace TessBed
             var data = new List<TestCaseData>();
             foreach (WindingRule winding in Enum.GetValues(typeof(WindingRule)))
             {
-                foreach (var name in _loader.AssetNames)
+                foreach (var asset in _loader.Assets)
                 {
-                    data.Add(new TestCaseData { AssetName = name, Winding = winding, ElementSize = 3 });
+                    data.Add(new TestCaseData { Asset = asset, Winding = winding, ElementSize = 3 });
                 }
             }
             return data.ToArray();
