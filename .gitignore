@@ -28,8 +28,10 @@
 *.vspx
 *.diagsession
 TestResult.xml
+
 obj/
 .vscode/
+.vs/
 Work/
 Build/Debug/
 Build/Release/
