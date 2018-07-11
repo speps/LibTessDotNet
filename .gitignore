@@ -19,6 +19,8 @@
 *.zip
 *.opensdf
 *.user.*
+*.DotSettings
+*.DotSettings.user
 *.xcuserstate
 *.xcworkspace
 *.xcuserdata
