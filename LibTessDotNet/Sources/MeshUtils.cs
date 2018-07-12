@@ -31,10 +31,6 @@
 ** LibTessDotNet: Remi Gillig, https://github.com/speps/LibTessDotNet
 */
 
-#if DEBUG
-#define DEBUG_CHECK_BALANCE
-#endif
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
