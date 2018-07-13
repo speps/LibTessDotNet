@@ -114,7 +114,9 @@ namespace LibTessDotNet
         /// <summary>
         /// If true, will remove empty (zero area) polygons.
         /// </summary>
-        public bool NoEmptyPolygons = false;        /// <summary>
+        public bool NoEmptyPolygons = false;
+        
+        /// <summary>
         /// OBSOLETE: use the IPool constructor to disable pooling by passing null.
         /// If true, will use pooling to reduce GC (compare performance with/without, can vary wildly).
         /// </summary>
