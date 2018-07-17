@@ -67,6 +67,13 @@ namespace LibTessDotNet
             }
         }
 
+        public Vec3(Real x, Real y, Real z)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+        }
+
         public static void Sub(ref Vec3 lhs, ref Vec3 rhs, out Vec3 result)
         {
             result.X = lhs.X - rhs.X;
