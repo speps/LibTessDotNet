@@ -180,7 +180,7 @@ namespace LibTessDotNet
             if (minVal[i] >= maxVal[i])
             {
                 // All vertices are the same -- normal doesn't matter
-                norm = new Vec3 { X = 0, Y = 0, Z = 1 };
+                norm = new Vec3(0, 0, 1);
                 return;
             }
 
