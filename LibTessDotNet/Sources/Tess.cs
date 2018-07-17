@@ -740,17 +740,8 @@ namespace LibTessDotNet
             }
         }
 
-        public void Tessellate(WindingRule windingRule, ElementType elementType, int polySize)
-        {
-            Tessellate(windingRule, elementType, polySize, null);
-        }
-
-        public void Tessellate(WindingRule windingRule, ElementType elementType, int polySize, CombineCallback combineCallback)
-        {
-            Tessellate(windingRule, elementType, polySize, combineCallback, Vec3.Zero);
-        }
-
-        public void Tessellate(WindingRule windingRule, ElementType elementType, int polySize, CombineCallback combineCallback, Vec3 normal)
+        public void Tessellate(WindingRule windingRule = WindingRule.EvenOdd, ElementType elementType = ElementType.Polygons, int polySize = 3,
+            CombineCallback combineCallback = null, Vec3 normal = new Vec3())
         {
             _normal = normal;
             _vertices = null;
