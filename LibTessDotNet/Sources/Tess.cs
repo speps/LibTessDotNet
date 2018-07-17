@@ -32,6 +32,7 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 #if DOUBLE
@@ -635,14 +636,14 @@ namespace LibTessDotNet
             }
         }
 
-        private Real SignedArea(ContourVertex[] vertices)
+        private Real SignedArea(IList<ContourVertex> vertices)
         {
             Real area = 0.0f;
 
-            for (int i = 0; i < vertices.Length; i++)
+            for (int i = 0; i < vertices.Count; i++)
             {
                 var v0 = vertices[i];
-                var v1 = vertices[(i + 1) % vertices.Length];
+                var v1 = vertices[(i + 1) % vertices.Count];
 
                 area += v0.Position.X * v1.Position.Y;
                 area -= v0.Position.Y * v1.Position.X;
@@ -651,12 +652,17 @@ namespace LibTessDotNet
             return 0.5f * area;
         }
 
-        public void AddContour(ContourVertex[] vertices)
+        public void AddContour(ContourVertex[] vertices, ContourOrientation forceOrientation = ContourOrientation.Original)
         {
-            AddContour(vertices, ContourOrientation.Original);
+            AddContourInternal(vertices, forceOrientation);
         }
 
-        public void AddContour(ContourVertex[] vertices, ContourOrientation forceOrientation)
+        public void AddContour(IList<ContourVertex> vertices, ContourOrientation forceOrientation = ContourOrientation.Original)
+        {
+            AddContourInternal(vertices, forceOrientation);
+        }
+
+        private void AddContourInternal(IList<ContourVertex> vertices, ContourOrientation forceOrientation)
         {
             if (_mesh == null)
             {
@@ -671,7 +677,7 @@ namespace LibTessDotNet
             }
 
             MeshUtils.Edge e = null;
-            for (int i = 0; i < vertices.Length; ++i)
+            for (int i = 0; i < vertices.Count; ++i)
             {
                 if (e == null)
                 {
@@ -686,7 +692,7 @@ namespace LibTessDotNet
                     e = e._Lnext;
                 }
 
-                int index = reverse ? vertices.Length - 1 - i : i;
+                int index = reverse ? vertices.Count - 1 - i : i;
                 // The new vertex is now e._Org.
                 e._Org._coords = vertices[index].Position;
                 e._Org._data = vertices[index].Data;
