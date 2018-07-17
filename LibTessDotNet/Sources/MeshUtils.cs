@@ -242,8 +242,6 @@ namespace LibTessDotNet
 
     internal static class MeshUtils
     {
-        public const int Undef = ~0;
-
         internal class Vertex : Pooled<Vertex>
         {
             internal Vertex _prev, _next;
