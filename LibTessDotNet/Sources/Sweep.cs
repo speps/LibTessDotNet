@@ -346,7 +346,7 @@ namespace LibTessDotNet
         }
 
         /// <summary>
-        /// Two vertices with idential coordinates are combined into one.
+        /// Two vertices with identical coordinates are combined into one.
         /// e1.Org is kept, while e2.Org is discarded.
         /// </summary>
         private void SpliceMergeVertices(MeshUtils.Edge e1, MeshUtils.Edge e2)
@@ -586,7 +586,7 @@ namespace LibTessDotNet
             if (Geom.VertLeq(isect, _event))
             {
                 // The intersection point lies slightly to the left of the sweep line,
-                // so move it until it''s slightly to the right of the sweep line.
+                // so move it until it's slightly to the right of the sweep line.
                 // (If we had perfect numerical precision, this would never happen
                 // in the first place). The easiest and safest thing to do is
                 // replace the intersection by tess._event.
@@ -803,7 +803,7 @@ namespace LibTessDotNet
         ///    For example, maybe there is a vertical edge which passes just to
         ///    the right of vEvent; we would like to splice vEvent into this edge.
         /// 
-        /// However, we don't want to connect vEvent to just any vertex.  We don''t
+        /// However, we don't want to connect vEvent to just any vertex.  We don't
         /// want the new edge to cross any other edges; otherwise we will create
         /// intersection vertices even when the input data had no self-intersections.
         /// (This is a bad thing; if the user's input data has no intersections,
@@ -812,13 +812,13 @@ namespace LibTessDotNet
         /// Our eventual goal is to connect vEvent to the leftmost unprocessed
         /// vertex of the combined region (the union of regUp and regLo).
         /// But because of unseen vertices with all right-going edges, and also
-        /// new vertices which may be created by edge intersections, we don''t
+        /// new vertices which may be created by edge intersections, we don't
         /// know where that leftmost unprocessed vertex is.  In the meantime, we
         /// connect vEvent to the closest vertex of either chain, and mark the region
         /// as "fixUpperEdge".  This flag says to delete and reconnect this edge
         /// to the next processed vertex on the boundary of the combined region.
         /// Quite possibly the vertex we connected to will turn out to be the
-        /// closest one, in which case we won''t need to make any changes.
+        /// closest one, in which case we won't need to make any changes.
         /// </summary>
         private void ConnectRightVertex(ActiveRegion regUp, MeshUtils.Edge eBottomLeft)
         {
@@ -876,7 +876,7 @@ namespace LibTessDotNet
         }
 
         /// <summary>
-        /// The event vertex lies exacty on an already-processed edge or vertex.
+        /// The event vertex lies exactly on an already-processed edge or vertex.
         /// Adding the new vertex involves splicing it into the already-processed
         /// part of the mesh.
         /// </summary>
@@ -888,7 +888,7 @@ namespace LibTessDotNet
                 // e.Org is an unprocessed vertex - just combine them, and wait
                 // for e.Org to be pulled from the queue
                 // C# : in the C version, there is a flag but it was never implemented
-                // the vertices are before beginning the tesselation
+                // the vertices are before beginning the tessellation
                 throw new InvalidOperationException("Vertices should have been merged before");
             }
 

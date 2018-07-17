@@ -43,6 +43,11 @@ using Real = System.Single;
 namespace LibTessDotNet
 #endif
 {
+    /// <summary>
+    /// The winding rule determines how the different contours are combined together.
+    /// See OpenGL Programming Guide (section "Winding Numbers and Winding Rules") for description of the winding rules.
+    /// http://www.glprogramming.com/red/chapter11.html
+    /// </summary>
     public enum WindingRule
     {
         EvenOdd,
@@ -52,10 +57,27 @@ namespace LibTessDotNet
         AbsGeqTwo
     }
 
+    /// <summary>
+    /// The element type determines the contents of <see cref="Tess.Elements"/>.
+    /// </summary>
     public enum ElementType
     {
+        /// <summary>
+        /// Each element in <see cref="Tess.Elements"/> is a polygon defined as 'polySize' number of vertex indices.
+        /// If a polygon has less than 'polySize' vertices, the remaining indices are stored as <see cref="MeshUtils.Undef"/>.
+        /// </summary>
         Polygons,
+        /// <summary>
+        /// Each element in <see cref="Tess.Elements"/> is polygon defined as 'polySize' number of vertex indices,
+        /// followed by 'polySize' indices to neighbour polygons, that is each element is 'polySize' * 2 indices.
+        /// If a polygon has less than 'polySize' vertices, the remaining indices are stored as <see cref="MeshUtils.Undef"/>.
+        /// If a polygon edge is a boundary, that is, not connected to another polygon, the neighbour index is <see cref="MeshUtils.Undef"/>.
+        /// </summary>
         ConnectedPolygons,
+        /// <summary>
+        /// Each element in <see cref="Tess.Elements"/> is [base index, count] pair defining a range of vertices for a contour.
+        /// The first value is index to first vertex in contour and the second value is number of vertices in the contour.
+        /// </summary>
         BoundaryContours
     }
 
@@ -218,7 +240,7 @@ namespace LibTessDotNet
         private void CheckOrientation()
         {
             // When we compute the normal automatically, we choose the orientation
-            // so that the the sum of the signed areas of all contours is non-negative.
+            // so that the sum of the signed areas of all contours is non-negative.
             Real area = 0.0f;
             for (var f = _mesh._fHead._next; f != _mesh._fHead; f = f._next)
             {
