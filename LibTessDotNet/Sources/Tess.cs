@@ -64,14 +64,14 @@ namespace LibTessDotNet
     {
         /// <summary>
         /// Each element in <see cref="Tess.Elements"/> is a polygon defined as 'polySize' number of vertex indices.
-        /// If a polygon has less than 'polySize' vertices, the remaining indices are stored as <see cref="MeshUtils.Undef"/>.
+        /// If a polygon has less than 'polySize' vertices, the remaining indices are stored as <see cref="Tess.Undef"/>.
         /// </summary>
         Polygons,
         /// <summary>
         /// Each element in <see cref="Tess.Elements"/> is polygon defined as 'polySize' number of vertex indices,
         /// followed by 'polySize' indices to neighbour polygons, that is each element is 'polySize' * 2 indices.
-        /// If a polygon has less than 'polySize' vertices, the remaining indices are stored as <see cref="MeshUtils.Undef"/>.
-        /// If a polygon edge is a boundary, that is, not connected to another polygon, the neighbour index is <see cref="MeshUtils.Undef"/>.
+        /// If a polygon has less than 'polySize' vertices, the remaining indices are stored as <see cref="Tess.Undef"/>.
+        /// If a polygon edge is a boundary, that is, not connected to another polygon, the neighbour index is <see cref="Tess.Undef"/>.
         /// </summary>
         ConnectedPolygons,
         /// <summary>
@@ -123,6 +123,12 @@ namespace LibTessDotNet
         private int _vertexCount;
         private int[] _elements;
         private int _elementCount;
+
+        /// <summary>
+        /// Used to fill indices of incomplete polygons 
+        /// and marks boundary edges in <see cref="ElementType.ConnectedPolygons"/> mode
+        /// </summary>
+        public const int Undef = ~0;
 
         public Vec3 Normal { get { return _normal; } set { _normal = value; } }
 
@@ -472,9 +478,9 @@ namespace LibTessDotNet
         private int GetNeighbourFace(MeshUtils.Edge edge)
         {
             if (edge._Rface == null)
-                return MeshUtils.Undef;
+                return Undef;
             if (!edge._Rface._inside)
-                return MeshUtils.Undef;
+                return Undef;
             return edge._Rface._n;
         }
 
@@ -500,12 +506,12 @@ namespace LibTessDotNet
 
             // Mark unused
             for (v = _mesh._vHead._next; v != _mesh._vHead; v = v._next)
-                v._n = MeshUtils.Undef;
+                v._n = Undef;
 
             // Create unique IDs for all vertices and faces.
             for (f = _mesh._fHead._next; f != _mesh._fHead; f = f._next)
             {
-                f._n = MeshUtils.Undef;
+                f._n = Undef;
                 if (!f._inside) continue;
 
                 if (NoEmptyPolygons)
@@ -521,7 +527,7 @@ namespace LibTessDotNet
                 faceVerts = 0;
                 do {
                     v = edge._Org;
-                    if (v._n == MeshUtils.Undef)
+                    if (v._n == Undef)
                     {
                         v._n = maxVertexCount;
                         maxVertexCount++;
@@ -548,7 +554,7 @@ namespace LibTessDotNet
             // Output vertices.
             for (v = _mesh._vHead._next; v != _mesh._vHead; v = v._next)
             {
-                if (v._n != MeshUtils.Undef)
+                if (v._n != Undef)
                 {
                     // Store coordinate
                     _vertices[v._n].Position = v._coords;
@@ -583,7 +589,7 @@ namespace LibTessDotNet
                 // Fill unused.
                 for (i = faceVerts; i < polySize; ++i)
                 {
-                    _elements[elementIndex++] = MeshUtils.Undef;
+                    _elements[elementIndex++] = Undef;
                 }
 
                 // Store polygon connectivity
@@ -598,7 +604,7 @@ namespace LibTessDotNet
                     // Fill unused.
                     for (i = faceVerts; i < polySize; ++i)
                     {
-                        _elements[elementIndex++] = MeshUtils.Undef;
+                        _elements[elementIndex++] = Undef;
                     }
                 }
             }
