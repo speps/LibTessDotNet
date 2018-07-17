@@ -217,7 +217,7 @@ namespace LibTessDotNet
         private void CheckOrientation()
         {
             // When we compute the normal automatically, we choose the orientation
-            // so that the the sum of the signed areas of all contours is non-negative.
+            // so that the sum of the signed areas of all contours is non-negative.
             Real area = 0.0f;
             for (var f = _mesh._fHead._next; f != _mesh._fHead; f = f._next)
             {
