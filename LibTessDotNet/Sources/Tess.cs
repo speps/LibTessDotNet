@@ -53,8 +53,22 @@ namespace LibTessDotNet
 
     public enum ElementType
     {
+        /// <summary>
+        /// Each element in <see cref="Tess.Elements"/> is a polygon defined as 'polySize' number of vertex indices.
+        /// If a polygon has less than 'polySize' vertices, the remaining indices are stored as <see cref="MeshUtils.Undef"/>.
+        /// </summary>
         Polygons,
+        /// <summary>
+        /// Each element in <see cref="Tess.Elements"/> is polygon defined as 'polySize' number of vertex indices,
+        /// followed by 'polySize' indices to neighbour polygons, that is each element is 'polySize' * 2 indices.
+        /// If a polygon has less than 'polySize' vertices, the remaining indices are stored as <see cref="MeshUtils.Undef"/>.
+        /// If a polygon edge is a boundary, that is, not connected to another polygon, the neighbour index is <see cref="MeshUtils.Undef"/>.
+        /// </summary>
         ConnectedPolygons,
+        /// <summary>
+        /// Each element in <see cref="Tess.Elements"/> is [base index, count] pair defining a range of vertices for a contour.
+        /// The first value is index to first vertex in contour and the second value is number of vertices in the contour.
+        /// </summary>
         BoundaryContours
     }
 
