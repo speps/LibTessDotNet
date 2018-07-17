@@ -101,7 +101,8 @@ namespace LibTessDotNet
                 eNext = e._next;
                 pool.Return(e._Sym);
                 pool.Return(e);
-            }
+            }
+            
             _vHead = null;
             _fHead = null;
             _eHead = _eHeadSym = null;
