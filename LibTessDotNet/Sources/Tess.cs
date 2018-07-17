@@ -42,6 +42,11 @@ using Real = System.Single;
 namespace LibTessDotNet
 #endif
 {
+    /// <summary>
+    /// The winding rule determines how the different contours are combined together.
+    /// See OpenGL Programming Guide (section "Winding Numbers and Winding Rules") for description of the winding rules.
+    /// http://www.glprogramming.com/red/chapter11.html
+    /// </summary>
     public enum WindingRule
     {
         EvenOdd,
@@ -51,6 +56,9 @@ namespace LibTessDotNet
         AbsGeqTwo
     }
 
+    /// <summary>
+    /// The element type determines the contents of <see cref="Tess.Elements"/>.
+    /// </summary>
     public enum ElementType
     {
         /// <summary>
