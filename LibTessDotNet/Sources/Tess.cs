@@ -107,6 +107,25 @@ namespace LibTessDotNet
 
     public delegate object CombineCallback(Vec3 position, object[] data, Real[] weights);
 
+    /// <summary>
+    /// The main tessellation class
+    /// </summary>
+    /// <example>
+    /// Create a new Tess instance:
+    /// var tess = new Tess();
+    /// 
+    /// Add a contour:
+    /// tess.AddContour(contour);
+    /// 
+    /// Tessellate!
+    /// tess.Tessellate();
+    /// 
+    /// Use the tessellated mesh:
+    /// Vec3 v0 = tess.Vertices[tess.Elements[0]].Position;
+    /// Vec3 v1 = tess.Vertices[tess.Elements[1]].Position;
+    /// Vec3 v2 = tess.Vertices[tess.Elements[2]].Position;
+    /// Console.WriteLine("Triangle: ({0}) ({1}) ({2})", v0, v1, v2);
+    /// </example>
     public partial class Tess
     {
         private IPool _pool;
@@ -131,11 +150,14 @@ namespace LibTessDotNet
         private int _elementCount;
 
         /// <summary>
-        /// Used to fill indices of incomplete polygons 
-        /// and marks boundary edges in <see cref="ElementType.ConnectedPolygons"/> mode
+        /// The value used to fill indices of incomplete polygons 
+        /// and to mark boundary edges in <see cref="ElementType.ConnectedPolygons"/> mode.
         /// </summary>
         public const int Undef = ~0;
 
+        /// <summary>
+        /// Normal of the tessellated mesh.
+        /// </summary>
         public Vec3 Normal { get { return _normal; } set { _normal = value; } }
 
         public Real SUnitX = 1;
@@ -150,7 +172,7 @@ namespace LibTessDotNet
         /// If true, will remove empty (zero area) polygons.
         /// </summary>
         public bool NoEmptyPolygons = false;
-        
+
         /// <summary>
         /// OBSOLETE: use the IPool constructor to disable pooling by passing null.
         /// If true, will use pooling to reduce GC (compare performance with/without, can vary wildly).
@@ -158,10 +180,22 @@ namespace LibTessDotNet
         [Obsolete]
         public bool UsePooling = true;
 
+        /// <summary>
+        /// Vertices of the tessellated mesh.
+        /// </summary>
         public ContourVertex[] Vertices { get { return _vertices; } }
+        /// <summary>
+        /// Number of vertices in the tessellated mesh.
+        /// </summary>
         public int VertexCount { get { return _vertexCount; } }
 
+        /// <summary>
+        /// Indices of the tessellated mesh. See <see cref="ElementType"/> for details on data layout.
+        /// </summary>
         public int[] Elements { get { return _elements; } }
+        /// <summary>
+        /// Number of elements in the tessellated mesh.
+        /// </summary>
         public int ElementCount { get { return _elementCount; } }
 
         public Tess()
@@ -686,11 +720,31 @@ namespace LibTessDotNet
             return 0.5f * area;
         }
 
+        /// <summary>
+        /// Adds a closed contour to be tessellated.
+        /// </summary>
+        /// <param name="vertices"> Vertices of the contour. </param>
+        /// <param name="forceOrientation">
+        /// Orientation of the contour.
+        /// <see cref="ContourOrientation.Original"/> keeps the orientation of the input vertices.
+        /// <see cref="ContourOrientation.Clockwise"/> and <see cref="ContourOrientation.CounterClockwise"/> 
+        /// force the vertices to have a specified orientation.
+        /// </param>
         public void AddContour(ContourVertex[] vertices, ContourOrientation forceOrientation = ContourOrientation.Original)
         {
             AddContourInternal(vertices, forceOrientation);
         }
 
+        /// <summary>
+        /// Adds a closed contour to be tessellated.
+        /// </summary>
+        /// <param name="vertices"> Vertices of the contour. </param>
+        /// <param name="forceOrientation">
+        /// Orientation of the contour.
+        /// <see cref="ContourOrientation.Original"/> keeps the orientation of the input vertices.
+        /// <see cref="ContourOrientation.Clockwise"/> and <see cref="ContourOrientation.CounterClockwise"/> 
+        /// force the vertices to have a specified orientation.
+        /// </param>
         public void AddContour(IList<ContourVertex> vertices, ContourOrientation forceOrientation = ContourOrientation.Original)
         {
             AddContourInternal(vertices, forceOrientation);
@@ -740,6 +794,14 @@ namespace LibTessDotNet
             }
         }
 
+        /// <summary>
+        /// Tessellates the input contours.
+        /// </summary>
+        /// <param name="windingRule"> Winding rule used for tessellation. See <see cref="WindingRule"/> for details. </param>
+        /// <param name="elementType"> Tessellation output type. See <see cref="ElementType"/> for details. </param>
+        /// <param name="polySize"> Number of vertices per polygon if output is polygons. </param>
+        /// <param name="combineCallback"> Interpolator used to determine the data payload of generated vertices. </param>
+        /// <param name="normal"> Normal of the input contours. If set to zero, the normal will be calculated during tessellation. </param>
         public void Tessellate(WindingRule windingRule = WindingRule.EvenOdd, ElementType elementType = ElementType.Polygons, int polySize = 3,
             CombineCallback combineCallback = null, Vec3 normal = new Vec3())
         {
