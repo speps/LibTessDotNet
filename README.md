@@ -8,7 +8,7 @@ Provide a robust and fast tessellator (polygons with N vertices in the output) f
 ### Requirements
 
 * .NET framework 2.0 (pure CLR, should work with Mono, Unity or XNA)
-* C# 3.0 compiler if you want to compile (I am guilty of using 'var')
+* C# 4.0 compiler if you want to compile
     - WinForms for the testbed
     - Solution file for Visual Studio 2010
 
@@ -49,7 +49,7 @@ Provide a robust and fast tessellator (polygons with N vertices in the output) f
 ### License
 
 SGI FREE SOFTWARE LICENSE B (Version 2.0, Sept. 18, 2008)
-More information in LICENSE.txt.
+More information in [LICENSE.txt](LICENSE.txt).
 
 ### Links
 * [Reference implementation](http://oss.sgi.com/projects/ogl-sample) - the original SGI reference implementation
