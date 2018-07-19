@@ -31,8 +31,6 @@
 ** LibTessDotNet: Remi Gillig, https://github.com/speps/LibTessDotNet
 */
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 
 #if DOUBLE
