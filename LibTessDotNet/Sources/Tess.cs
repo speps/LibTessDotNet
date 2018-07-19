@@ -155,11 +155,6 @@ namespace LibTessDotNet
         /// </summary>
         public const int Undef = ~0;
 
-        /// <summary>
-        /// Normal of the tessellated mesh.
-        /// </summary>
-        public Vec3 Normal { get { return _normal; } set { _normal = value; } }
-
         public Real SUnitX = 1;
         public Real SUnitY = 0;
 #if DOUBLE
@@ -179,6 +174,11 @@ namespace LibTessDotNet
         /// </summary>
         [Obsolete]
         public bool UsePooling = true;
+
+        /// <summary>
+        /// Normal of the tessellated mesh.
+        /// </summary>
+        public Vec3 Normal { get { return _normal; } }
 
         /// <summary>
         /// Vertices of the tessellated mesh.
