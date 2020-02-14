@@ -108,19 +108,21 @@ namespace LibTessDotNet
     public delegate object CombineCallback(Vec3 position, object[] data, Real[] weights);
 
     /// <summary>
-    /// The main tessellation class
+    /// Tessellator, the main class to use
     /// </summary>
     /// <example>
-    /// Create a new Tess instance:
+    /// // See TessExample/Program.cs for a full example.
+    /// 
+    /// // Create a new Tess instance:
     /// var tess = new Tess();
     /// 
-    /// Add a contour:
+    /// // Add a contour:
     /// tess.AddContour(contour);
     /// 
-    /// Tessellate!
+    /// // Tessellate!
     /// tess.Tessellate();
     /// 
-    /// Use the tessellated mesh:
+    /// // Use the tessellated mesh:
     /// Vec3 v0 = tess.Vertices[tess.Elements[0]].Position;
     /// Vec3 v1 = tess.Vertices[tess.Elements[1]].Position;
     /// Vec3 v2 = tess.Vertices[tess.Elements[2]].Position;
@@ -169,14 +171,7 @@ namespace LibTessDotNet
         public bool NoEmptyPolygons = false;
 
         /// <summary>
-        /// OBSOLETE: use the IPool constructor to disable pooling by passing null.
-        /// If true, will use pooling to reduce GC (compare performance with/without, can vary wildly).
-        /// </summary>
-        [Obsolete]
-        public bool UsePooling = true;
-
-        /// <summary>
-        /// Normal of the tessellated mesh.
+        /// Normal of the tessellated mesh. The normal is the main axis of sweep that has been used.
         /// </summary>
         public Vec3 Normal { get { return _normal; } }
 
@@ -202,7 +197,6 @@ namespace LibTessDotNet
             : this(new DefaultPool())
         {
         }
-
         public Tess(IPool pool)
         {
             _normal = Vec3.Zero;
