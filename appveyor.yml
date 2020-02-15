@@ -3,7 +3,9 @@ pull_requests:
   do_not_increment_build_number: true
 image: Visual Studio 2019
 build_script:
-- cmd: dotnet build
+- cmd: >-
+    dotnet build -p:Configuration=Release
+    dotnet build -p:Configuration=ReleaseDouble
 assembly_info:
   patch: true
   file: LibTessDotNet\Properties\AssemblyInfo.cs
