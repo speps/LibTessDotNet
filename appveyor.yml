@@ -1,7 +1,9 @@
 version: 1.1.{build}
-build:
-  verbosity: minimal
-  project: LibTessDotNet.sln
+pull_requests:
+  do_not_increment_build_number: true
+image: Visual Studio 2019
+build_script:
+- cmd: dotnet build
 assembly_info:
   patch: true
   file: LibTessDotNet\Properties\AssemblyInfo.cs
@@ -18,3 +20,11 @@ artifacts:
   name: NuGet
 - path: Build\TempNuGet\LibTessDotNet*.snupkg
   name: NuGet Symbols
+deploy:
+- provider: GitHub
+  tag: v$(appveyor_build_version)
+  release: LibTessDotNet v$(appveyor_build_version)
+  auth_token:
+    secure: aYJcls5NKDkcRqSoOJUhvcC8fELBSlfm7Ogny3sG8Hi97PJ5ejGCIDPu5dKDF0AT
+  artifact: Build\LibTessDotNet-v$(appveyor_build_version).zip
+  draft: false
