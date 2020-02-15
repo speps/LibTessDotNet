@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("LibTessDotNet")]
 [assembly: AssemblyDescription("C# port of the famous GLU Tesselator")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("N/A")]
+[assembly: AssemblyCompany("Remi Gillig")]
 [assembly: AssemblyProduct("LibTessDotNet")]
 [assembly: AssemblyCopyright("LICENSE.txt")]
 [assembly: AssemblyTrademark("")]

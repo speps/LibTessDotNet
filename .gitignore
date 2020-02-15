@@ -31,9 +31,8 @@
 *.diagsession
 TestResult.xml
 
+bin/
 obj/
 .vscode/
 .vs/
-Work/
-Build/Debug/
-Build/Release/
+Build/Temp*

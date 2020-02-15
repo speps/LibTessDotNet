@@ -10,6 +10,11 @@ assembly_info:
 skip_tags: true
 after_test:
 - call Build\PackageCurrentBranch.bat
+- call Build\PackageNuGet.bat
 artifacts:
 - path: Build\LibTessDotNet*.zip
-  name: LibTessDotNet
+  name: GitHub
+- path: Build\TempNuGet\LibTessDotNet*.nupkg
+  name: NuGet
+- path: Build\TempNuGet\LibTessDotNet*.snupkg
+  name: NuGet Symbols
