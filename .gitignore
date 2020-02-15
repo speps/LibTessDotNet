@@ -29,6 +29,8 @@
 *.mlpd
 *.vspx
 *.diagsession
+*.nupkg
+*.snupkg
 TestResult.xml
 
 bin/
