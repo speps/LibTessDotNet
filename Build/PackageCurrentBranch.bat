@@ -22,7 +22,7 @@ if not "%1" == "" (
     set /P _version=Enter version || set _version=NONE
 )
 if "%_version%"=="NONE" goto :error
-set _version="LibTessDotNet-%_version%"
+set _version="LibTessDotNet-v%_version%"
 
 move TempPackage "%_version%"
 
