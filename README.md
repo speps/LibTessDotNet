@@ -7,10 +7,7 @@ Provide a robust and fast tessellator (polygons with N vertices in the output) f
 
 ### Requirements
 
-* .NET framework 2.0 (pure CLR, should work with Mono, Unity or XNA)
-* C# 3.0 compiler if you want to compile (I am guilty of using 'var')
-    - WinForms for the testbed
-    - Solution file for Visual Studio 2010
+* .NET Standard 2.0 (see [here](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) for more information)
 
 ### Features
 
@@ -36,6 +33,11 @@ Provide a robust and fast tessellator (polygons with N vertices in the output) f
 
 ![Benchmarks](https://raw.github.com/speps/LibTessDotNet/master/TessBed/Misc/benchmarks.png)
 
+### Build
+
+```
+dotnet build
+```
 
 ### Example
 
