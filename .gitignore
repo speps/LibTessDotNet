@@ -19,6 +19,8 @@
 *.zip
 *.opensdf
 *.user.*
+*.DotSettings
+*.DotSettings.user
 *.xcuserstate
 *.xcworkspace
 *.xcuserdata
@@ -27,9 +29,12 @@
 *.mlpd
 *.vspx
 *.diagsession
+*.nupkg
+*.snupkg
 TestResult.xml
+
+bin/
 obj/
 .vscode/
-Work/
-Build/Debug/
-Build/Release/
+.vs/
+Build/Temp*

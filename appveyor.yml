@@ -1,7 +1,9 @@
-version: 1.0.{build}
-build:
-  verbosity: minimal
-  project: Build\Automation.proj
+version: 1.1.{build}
+pull_requests:
+  do_not_increment_build_number: true
+image: Visual Studio 2019
+build_script:
+- cmd: call Build\BuildPackage.bat
 assembly_info:
   patch: true
   file: LibTessDotNet\Properties\AssemblyInfo.cs
@@ -10,6 +12,11 @@ assembly_info:
 skip_tags: true
 after_test:
 - call Build\PackageCurrentBranch.bat
+- call Build\PackageNuGet.bat
 artifacts:
 - path: Build\LibTessDotNet*.zip
-  name: LibTessDotNet
+  name: GitHub
+- path: Build\TempNuGet\LibTessDotNet*.nupkg
+  name: NuGet
+- path: Build\TempNuGet\LibTessDotNet*.snupkg
+  name: NuGet Symbols

@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibTessDotNet", "LibTessDotNet\LibTessDotNet.csproj", "{5EE39029-873A-45A0-9259-2198BF8729F4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TessBed", "TessBed\TessBed.csproj", "{AA3C13F4-2628-43D5-BAAE-751AE013C865}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TessBed", "TessBed\TessBed.csproj", "{AA3C13F4-2628-43D5-BAAE-751AE013C865}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Misc", "Misc", "{1E6E1C79-67C6-4979-A1D3-50A976ABB44E}"
 	ProjectSection(SolutionItems) = preProject
@@ -13,7 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Misc", "Misc", "{1E6E1C79-6
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TessExample", "TessExample\TessExample.csproj", "{BB1005DC-C911-4E65-B3B8-7316357FD254}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TessExample", "TessExample\TessExample.csproj", "{BB1005DC-C911-4E65-B3B8-7316357FD254}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,20 +31,23 @@ Global
 		{5EE39029-873A-45A0-9259-2198BF8729F4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5EE39029-873A-45A0-9259-2198BF8729F4}.ReleaseDouble|Any CPU.ActiveCfg = ReleaseDouble|Any CPU
 		{5EE39029-873A-45A0-9259-2198BF8729F4}.ReleaseDouble|Any CPU.Build.0 = ReleaseDouble|Any CPU
-		{AA3C13F4-2628-43D5-BAAE-751AE013C865}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{AA3C13F4-2628-43D5-BAAE-751AE013C865}.Debug|Any CPU.Build.0 = Debug|x86
-		{AA3C13F4-2628-43D5-BAAE-751AE013C865}.DebugDouble|Any CPU.ActiveCfg = Debug|x86
-		{AA3C13F4-2628-43D5-BAAE-751AE013C865}.Release|Any CPU.ActiveCfg = Release|x86
-		{AA3C13F4-2628-43D5-BAAE-751AE013C865}.Release|Any CPU.Build.0 = Release|x86
-		{AA3C13F4-2628-43D5-BAAE-751AE013C865}.ReleaseDouble|Any CPU.ActiveCfg = Release|x86
-		{BB1005DC-C911-4E65-B3B8-7316357FD254}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{BB1005DC-C911-4E65-B3B8-7316357FD254}.Debug|Any CPU.Build.0 = Debug|x86
-		{BB1005DC-C911-4E65-B3B8-7316357FD254}.DebugDouble|Any CPU.ActiveCfg = Debug|x86
-		{BB1005DC-C911-4E65-B3B8-7316357FD254}.Release|Any CPU.ActiveCfg = Release|x86
-		{BB1005DC-C911-4E65-B3B8-7316357FD254}.Release|Any CPU.Build.0 = Release|x86
-		{BB1005DC-C911-4E65-B3B8-7316357FD254}.ReleaseDouble|Any CPU.ActiveCfg = Release|x86
+		{AA3C13F4-2628-43D5-BAAE-751AE013C865}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA3C13F4-2628-43D5-BAAE-751AE013C865}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA3C13F4-2628-43D5-BAAE-751AE013C865}.DebugDouble|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA3C13F4-2628-43D5-BAAE-751AE013C865}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA3C13F4-2628-43D5-BAAE-751AE013C865}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA3C13F4-2628-43D5-BAAE-751AE013C865}.ReleaseDouble|Any CPU.ActiveCfg = Release|Any CPU
+		{BB1005DC-C911-4E65-B3B8-7316357FD254}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB1005DC-C911-4E65-B3B8-7316357FD254}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB1005DC-C911-4E65-B3B8-7316357FD254}.DebugDouble|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB1005DC-C911-4E65-B3B8-7316357FD254}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB1005DC-C911-4E65-B3B8-7316357FD254}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB1005DC-C911-4E65-B3B8-7316357FD254}.ReleaseDouble|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {737946C7-E39E-4EF3-83BC-6A08CBAF4678}
 	EndGlobalSection
 EndGlobal

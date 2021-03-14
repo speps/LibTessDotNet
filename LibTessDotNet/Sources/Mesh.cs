@@ -31,7 +31,6 @@
 ** LibTessDotNet: Remi Gillig, https://github.com/speps/LibTessDotNet
 */
 
-using System;
 using System.Diagnostics;
 
 #if DOUBLE
@@ -40,18 +39,18 @@ namespace LibTessDotNet.Double
 namespace LibTessDotNet
 #endif
 {
-    internal class Mesh : MeshUtils.Pooled<Mesh>
+    internal class Mesh : Pooled<Mesh>
     {
         internal MeshUtils.Vertex _vHead;
         internal MeshUtils.Face _fHead;
         internal MeshUtils.Edge _eHead, _eHeadSym;
 
-        public Mesh()
+        public void Init(IPool pool)
         {
-            var v = _vHead = MeshUtils.Vertex.Create();
-            var f = _fHead = MeshUtils.Face.Create();
+            var v = _vHead = pool.Get<MeshUtils.Vertex>();
+            var f = _fHead = pool.Get<MeshUtils.Face>();
 
-            var pair = MeshUtils.EdgePair.Create();
+            var pair = MeshUtils.EdgePair.Create(pool);
             var e = _eHead = pair._e;
             var eSym = _eHeadSym = pair._eSym;
 
@@ -83,43 +82,41 @@ namespace LibTessDotNet
             eSym._activeRegion = null;
         }
 
-        public override void Reset()
+        public void Reset(IPool pool)
         {
+            for (MeshUtils.Face f = _fHead, fNext = _fHead; f._next != null; f = fNext)
+            {
+                fNext = f._next;
+                pool.Return(f);
+            }
+            for (MeshUtils.Vertex v = _vHead, vNext = _vHead; v._next != null; v = vNext)
+            {
+                vNext = v._next;
+                pool.Return(v);
+            }
+            for (MeshUtils.Edge e = _eHead, eNext = _eHead; e._next != null; e = eNext)
+            {
+                eNext = e._next;
+                pool.Return(e._Sym);
+                pool.Return(e);
+            }
+            
             _vHead = null;
             _fHead = null;
             _eHead = _eHeadSym = null;
-        }
-
-        public override void OnFree()
-        {
-            for (MeshUtils.Face f = _fHead._next, fNext = _fHead; f != _fHead; f = fNext)
-            {
-                fNext = f._next;
-                f.Free();
-            }
-            for (MeshUtils.Vertex v = _vHead._next, vNext = _vHead; v != _vHead; v = vNext)
-            {
-                vNext = v._next;
-                v.Free();
-            }
-            for (MeshUtils.Edge e = _eHead._next, eNext = _eHead; e != _eHead; e = eNext)
-            {
-                eNext = e._next;
-                e.Free();
-            }
         }
 
         /// <summary>
         /// Creates one edge, two vertices and a loop (face).
         /// The loop consists of the two new half-edges.
         /// </summary>
-        public MeshUtils.Edge MakeEdge()
+        public MeshUtils.Edge MakeEdge(IPool pool)
         {
-            var e = MeshUtils.MakeEdge(_eHead);
+            var e = MeshUtils.MakeEdge(pool, _eHead);
 
-            MeshUtils.MakeVertex(e, _vHead);
-            MeshUtils.MakeVertex(e._Sym, _vHead);
-            MeshUtils.MakeFace(e, _fHead);
+            MeshUtils.MakeVertex(pool, e, _vHead);
+            MeshUtils.MakeVertex(pool, e._Sym, _vHead);
+            MeshUtils.MakeFace(pool, e, _fHead);
 
             return e;
         }
@@ -148,7 +145,7 @@ namespace LibTessDotNet
         /// If eDst == eOrg->Onext, the new vertex will have a single edge.
         /// If eDst == eOrg->Oprev, the old vertex will have a single edge.
         /// </summary>
-        public void Splice(MeshUtils.Edge eOrg, MeshUtils.Edge eDst)
+        public void Splice(IPool pool, MeshUtils.Edge eOrg, MeshUtils.Edge eDst)
         {
             if (eOrg == eDst)
             {
@@ -160,14 +157,14 @@ namespace LibTessDotNet
             {
                 // We are merging two disjoint vertices -- destroy eDst->Org
                 joiningVertices = true;
-                MeshUtils.KillVertex(eDst._Org, eOrg._Org);
+                MeshUtils.KillVertex(pool, eDst._Org, eOrg._Org);
             }
             bool joiningLoops = false;
             if (eDst._Lface != eOrg._Lface)
             {
                 // We are connecting two disjoint loops -- destroy eDst->Lface
                 joiningLoops = true;
-                MeshUtils.KillFace(eDst._Lface, eOrg._Lface);
+                MeshUtils.KillFace(pool, eDst._Lface, eOrg._Lface);
             }
 
             // Change the edge structure
@@ -177,14 +174,14 @@ namespace LibTessDotNet
             {
                 // We split one vertex into two -- the new vertex is eDst->Org.
                 // Make sure the old vertex points to a valid half-edge.
-                MeshUtils.MakeVertex(eDst, eOrg._Org);
+                MeshUtils.MakeVertex(pool, eDst, eOrg._Org);
                 eOrg._Org._anEdge = eOrg;
             }
             if (!joiningLoops)
             {
                 // We split one loop into two -- the new loop is eDst->Lface.
                 // Make sure the old face points to a valid half-edge.
-                MeshUtils.MakeFace(eDst, eOrg._Lface);
+                MeshUtils.MakeFace(pool, eDst, eOrg._Lface);
                 eOrg._Lface._anEdge = eOrg;
             }
         }
@@ -196,7 +193,7 @@ namespace LibTessDotNet
         /// the newly created loop will contain eDel->Dst. If the deletion of eDel
         /// would create isolated vertices, those are deleted as well.
         /// </summary>
-        public void Delete(MeshUtils.Edge eDel)
+        public void Delete(IPool pool, MeshUtils.Edge eDel)
         {
             var eDelSym = eDel._Sym;
 
@@ -208,12 +205,12 @@ namespace LibTessDotNet
             {
                 // We are joining two loops into one -- remove the left face
                 joiningLoops = true;
-                MeshUtils.KillFace(eDel._Lface, eDel._Rface);
+                MeshUtils.KillFace(pool, eDel._Lface, eDel._Rface);
             }
 
             if (eDel._Onext == eDel)
             {
-                MeshUtils.KillVertex(eDel._Org, null);
+                MeshUtils.KillVertex(pool, eDel._Org, null);
             }
             else
             {
@@ -226,7 +223,7 @@ namespace LibTessDotNet
                 if (!joiningLoops)
                 {
                     // We are splitting one loop into two -- create a new loop for eDel.
-                    MeshUtils.MakeFace(eDel, eDel._Lface);
+                    MeshUtils.MakeFace(pool, eDel, eDel._Lface);
                 }
             }
 
@@ -235,8 +232,8 @@ namespace LibTessDotNet
 
             if (eDelSym._Onext == eDelSym)
             {
-                MeshUtils.KillVertex(eDelSym._Org, null);
-                MeshUtils.KillFace(eDelSym._Lface, null);
+                MeshUtils.KillVertex(pool, eDelSym._Org, null);
+                MeshUtils.KillFace(pool, eDelSym._Lface, null);
             }
             else
             {
@@ -247,16 +244,16 @@ namespace LibTessDotNet
             }
 
             // Any isolated vertices or faces have already been freed.
-            MeshUtils.KillEdge(eDel);
+            MeshUtils.KillEdge(pool, eDel);
         }
 
         /// <summary>
         /// Creates a new edge such that eNew == eOrg.Lnext and eNew.Dst is a newly created vertex.
         /// eOrg and eNew will have the same left face.
         /// </summary>
-        public MeshUtils.Edge AddEdgeVertex(MeshUtils.Edge eOrg)
+        public MeshUtils.Edge AddEdgeVertex(IPool pool, MeshUtils.Edge eOrg)
         {
-            var eNew = MeshUtils.MakeEdge(eOrg);
+            var eNew = MeshUtils.MakeEdge(pool, eOrg);
             var eNewSym = eNew._Sym;
 
             // Connect the new edge appropriately
@@ -264,7 +261,7 @@ namespace LibTessDotNet
 
             // Set vertex and face information
             eNew._Org = eOrg._Dst;
-            MeshUtils.MakeVertex(eNewSym, eNew._Org);
+            MeshUtils.MakeVertex(pool, eNewSym, eNew._Org);
             eNew._Lface = eNewSym._Lface = eOrg._Lface;
 
             return eNew;
@@ -275,9 +272,9 @@ namespace LibTessDotNet
         /// The new vertex is eOrg.Dst == eNew.Org.
         /// eOrg and eNew will have the same left face.
         /// </summary>
-        public MeshUtils.Edge SplitEdge(MeshUtils.Edge eOrg)
+        public MeshUtils.Edge SplitEdge(IPool pool, MeshUtils.Edge eOrg)
         {
-            var eTmp = AddEdgeVertex(eOrg);
+            var eTmp = AddEdgeVertex(pool, eOrg);
             var eNew = eTmp._Sym;
 
             // Disconnect eOrg from eOrg->Dst and connect it to eNew->Org
@@ -304,9 +301,9 @@ namespace LibTessDotNet
         /// If (eOrg->Lnext == eDst), the old face is reduced to a single edge.
         /// If (eOrg->Lnext->Lnext == eDst), the old face is reduced to two edges.
         /// </summary>
-        public MeshUtils.Edge Connect(MeshUtils.Edge eOrg, MeshUtils.Edge eDst)
+        public MeshUtils.Edge Connect(IPool pool, MeshUtils.Edge eOrg, MeshUtils.Edge eDst)
         {
-            var eNew = MeshUtils.MakeEdge(eOrg);
+            var eNew = MeshUtils.MakeEdge(pool, eOrg);
             var eNewSym = eNew._Sym;
 
             bool joiningLoops = false;
@@ -314,7 +311,7 @@ namespace LibTessDotNet
             {
                 // We are connecting two disjoint loops -- destroy eDst->Lface
                 joiningLoops = true;
-                MeshUtils.KillFace(eDst._Lface, eOrg._Lface);
+                MeshUtils.KillFace(pool, eDst._Lface, eOrg._Lface);
             }
 
             // Connect the new edge appropriately
@@ -331,7 +328,7 @@ namespace LibTessDotNet
 
             if (!joiningLoops)
             {
-                MeshUtils.MakeFace(eNew, eOrg._Lface);
+                MeshUtils.MakeFace(pool, eNew, eOrg._Lface);
             }
 
             return eNew;
@@ -345,7 +342,7 @@ namespace LibTessDotNet
         /// An entire mesh can be deleted by zapping its faces, one at a time,
         /// in any order. Zapped faces cannot be used in further mesh operations!
         /// </summary>
-        public void ZapFace(MeshUtils.Face fZap)
+        public void ZapFace(IPool pool, MeshUtils.Face fZap)
         {
             var eStart = fZap._anEdge;
 
@@ -363,7 +360,7 @@ namespace LibTessDotNet
 
                     if (e._Onext == e)
                     {
-                        MeshUtils.KillVertex(e._Org, null);
+                        MeshUtils.KillVertex(pool, e._Org, null);
                     }
                     else
                     {
@@ -374,7 +371,7 @@ namespace LibTessDotNet
                     eSym = e._Sym;
                     if (eSym._Onext == eSym)
                     {
-                        MeshUtils.KillVertex(eSym._Org, null);
+                        MeshUtils.KillVertex(pool, eSym._Org, null);
                     }
                     else
                     {
@@ -382,7 +379,7 @@ namespace LibTessDotNet
                         eSym._Org._anEdge = eSym._Onext;
                         MeshUtils.Splice(eSym, eSym._Oprev);
                     }
-                    MeshUtils.KillEdge(e);
+                    MeshUtils.KillEdge(pool, e);
                 }
             } while (e != eStart);
 
@@ -392,10 +389,10 @@ namespace LibTessDotNet
             fNext._prev = fPrev;
             fPrev._next = fNext;
 
-            fZap.Free();
+            pool.Return(fZap);
         }
 
-        public void MergeConvexFaces(int maxVertsPerFace)
+        public void MergeConvexFaces(IPool pool, int maxVertsPerFace)
         {
             for (var f = _fHead._next; f != _fHead; f = f._next)
             {
@@ -426,7 +423,7 @@ namespace LibTessDotNet
                                 Geom.VertCCW(eSym._Lprev._Org, eSym._Org, eCur._Lnext._Lnext._Org))
                             {
                                 eNext = eSym._Lnext;
-                                Delete(eSym);
+                                Delete(pool, eSym);
                                 eCur = null;
                             }
                         }

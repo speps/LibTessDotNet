@@ -79,7 +79,7 @@ namespace LibTessDotNet
         /// Given three vertices u,v,w such that VertLeq(u,v) && VertLeq(v,w),
         /// evaluates the t-coord of the edge uw at the s-coord of the vertex v.
         /// Returns v->t - (uw)(v->s), ie. the signed distance from uw to v.
-        /// If uw is vertical (and thus passes thru v), the result is zero.
+        /// If uw is vertical (and thus passes through v), the result is zero.
         /// 
         /// The calculation is extremely accurate and stable, even when v
         /// is very close to u or w.  In particular if we set v->t = 0 and

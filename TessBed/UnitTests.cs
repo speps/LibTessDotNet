@@ -16,13 +16,13 @@ namespace TessBed
 
         public struct TestCaseData
         {
-            public string AssetName;
+            public DataLoader.Asset Asset;
             public WindingRule Winding;
             public int ElementSize;
 
             public override string ToString()
             {
-                return string.Format("{0}, {1}, {2}", Winding, AssetName, ElementSize);
+                return string.Format("{0}, {1}, {2}", Winding, Asset.Name, ElementSize);
             }
         }
 
@@ -30,6 +30,54 @@ namespace TessBed
         {
             public int ElementSize;
             public int[] Indices;
+        }
+
+        public class TestPool : IPool
+        {
+            private IDictionary<Type, int> _newCount = new Dictionary<Type, int>();
+            private IDictionary<Type, int> _freeCount = new Dictionary<Type, int>();
+
+            public override T Get<T>()
+            {
+                if (!_newCount.ContainsKey(typeof(T)))
+                {
+                    _newCount.Add(typeof(T), 0);
+                }
+                _newCount[typeof(T)]++;
+                var obj = new T();
+                obj.Init(this);
+                return obj;
+            }
+
+            public override void Register<T>(ITypePool typePool)
+            {
+            }
+
+            public override void Return<T>(T obj)
+            {
+                if (obj == null)
+                {
+                    return;
+                }
+                obj.Reset(this);
+                if (!_freeCount.ContainsKey(typeof(T)))
+                {
+                    _freeCount.Add(typeof(T), 0);
+                }
+                _freeCount[typeof(T)]++;
+                if (_freeCount[typeof(T)] > _newCount[typeof(T)])
+                {
+                    throw new InvalidOperationException();
+                }
+            }
+
+            public void AssertCounts()
+            {
+                foreach (var type in _newCount)
+                {
+                    Assert.AreEqual(type.Value, _freeCount[type.Key], type.Key.ToString());
+                }
+            }
         }
 
         public bool OutputTestData = false;
@@ -45,7 +93,8 @@ namespace TessBed
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(data)))
             {
                 var pset = DataLoader.LoadDat(stream);
-                var tess = new Tess();
+                var pool = new TestPool();
+                var tess = new Tess(pool);
 
                 PolyConvert.ToTess(pset, tess);
                 tess.Tessellate(WindingRule.EvenOdd, ElementType.Polygons, 3);
@@ -61,6 +110,7 @@ namespace TessBed
                 }
 
                 Assert.AreEqual(expectedIndices, indices.ToArray());
+                pool.AssertCounts();
             }
         }
 
@@ -179,12 +229,13 @@ namespace TessBed
         [Test, TestCaseSource("GetTestCaseData")]
         public void Tessellate_WithAsset_ReturnsExpectedTriangulation(TestCaseData data)
         {
-            var pset = _loader.GetAsset(data.AssetName).Polygons;
-            var tess = new Tess();
+            var pset = data.Asset.Polygons;
+            var pool = new TestPool();
+            var tess = new Tess(pool);
             PolyConvert.ToTess(pset, tess);
             tess.Tessellate(data.Winding, ElementType.Polygons, data.ElementSize);
 
-            var resourceName = Assembly.GetExecutingAssembly().GetName().Name + ".TestData." + data.AssetName + ".testdat";
+            var resourceName = Assembly.GetExecutingAssembly().GetName().Name + ".TestData." + data.Asset.Name + ".testdat";
             var testData = ParseTestData(data.Winding, data.ElementSize, Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName));
             Assert.IsNotNull(testData);
             Assert.AreEqual(testData.ElementSize, data.ElementSize);
@@ -200,6 +251,7 @@ namespace TessBed
             }
 
             Assert.AreEqual(testData.Indices, indices.ToArray());
+            pool.AssertCounts();
         }
 
         public TestData ParseTestData(WindingRule winding, int elementSize, Stream resourceStream)
@@ -254,9 +306,9 @@ namespace TessBed
 
         public static void GenerateTestData()
         {
-            foreach (var name in _loader.AssetNames)
+            foreach (var asset in _loader.Assets)
             {
-                var pset = _loader.GetAsset(name).Polygons;
+                var pset = asset.Polygons;
 
                 var lines = new List<string>();
                 var indices = new List<int>();
@@ -281,7 +333,7 @@ namespace TessBed
                     lines.Add("");
                 }
 
-                File.WriteAllLines(Path.Combine(TestDataPath, name + ".testdat"), lines);
+                File.WriteAllLines(Path.Combine(TestDataPath, asset.Name + ".testdat"), lines);
             }
         }
 
@@ -290,9 +342,9 @@ namespace TessBed
             var data = new List<TestCaseData>();
             foreach (WindingRule winding in Enum.GetValues(typeof(WindingRule)))
             {
-                foreach (var name in _loader.AssetNames)
+                foreach (var asset in _loader.Assets)
                 {
-                    data.Add(new TestCaseData { AssetName = name, Winding = winding, ElementSize = 3 });
+                    data.Add(new TestCaseData { Asset = asset, Winding = winding, ElementSize = 3 });
                 }
             }
             return data.ToArray();

@@ -37,7 +37,7 @@ namespace TessExample
             for (int i = 0; i < numPoints; i++)
             {
                 // NOTE : Z is here for convenience if you want to keep a 3D vertex position throughout the tessellation process but only X and Y are important.
-                contour[i].Position = new LibTessDotNet.Vec3 { X = inputData[i * 2], Y = inputData[i * 2 + 1], Z = 0.0f };
+                contour[i].Position = new LibTessDotNet.Vec3(inputData[i * 2], inputData[i * 2 + 1], 0);
                 // Data can contain any per-vertex data, here a constant color.
                 contour[i].Data = Color.Azure;
             }

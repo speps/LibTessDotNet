@@ -3,13 +3,16 @@ setlocal
 set _currentpath=%~dp0
 pushd "%_currentpath%"
 
-del Release\*.pdb
+del /S /Q TempPackage
+md TempPackage
+copy ..\TessBed\bin\Release\net472\* TempPackage
+del TempPackage\*.pdb
 
-LibZ\libz.exe inject-dll --assembly Release\TessBed.exe --include Release\Poly2Tri.dll --include Release\nunit.framework.dll --move
+LibZ\libz.exe inject-dll --assembly TempPackage\TessBed.exe --include TempPackage\Poly2Tri.dll --include TempPackage\nunit.framework.dll --move
 
-copy ReleaseDouble\LibTessDotNet.Double.dll Release\LibTessDotNet.Double.dll
-copy Instructions.txt Release\Instructions.txt
-copy ..\LICENSE.txt Release\MITLicense.txt
+copy ..\LibTessDotNet\bin\ReleaseDouble\netstandard2.0\LibTessDotNet.Double.dll TempPackage\LibTessDotNet.Double.dll
+copy Instructions.txt TempPackage\Instructions.txt
+copy ..\LICENSE.txt TempPackage\MITLicense.txt
 
 if not "%1" == "" (
     set _version=%1
@@ -19,9 +22,9 @@ if not "%1" == "" (
     set /P _version=Enter version || set _version=NONE
 )
 if "%_version%"=="NONE" goto :error
-set _version="LibTessDotNet-%_version%"
+set _version="LibTessDotNet-v%_version%"
 
-move Release "%_version%"
+move TempPackage "%_version%"
 
 Zip\zip.exe -r "%_version%.zip" "%_version%"
 

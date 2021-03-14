@@ -9,6 +9,10 @@ Using LibTessDotNet.dll
 Visual Studio
 -------------
 
+This package is available on NuGet.org.
+
+Alternatively:
+
 Right click on the project "References" folder, select "Add Reference". Click on "Browse" and select LibTessDotNet.dll.
 
 Unity3D
