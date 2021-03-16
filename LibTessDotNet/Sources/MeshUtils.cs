@@ -34,7 +34,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-
+using System.Linq.Expressions;
 #if DOUBLE
 using Real = System.Double;
 namespace LibTessDotNet.Double
@@ -127,6 +127,10 @@ namespace LibTessDotNet
     {
         private Queue<T> _pool = new Queue<T>();
 
+        private static readonly Func<T> OptimizedInstantiator = Expression.Lambda<Func<T>>(
+                Expression.New(typeof(T))
+            ).Compile();
+
         public object Get()
         {
             lock (_pool)
@@ -136,7 +140,7 @@ namespace LibTessDotNet
                     return _pool.Dequeue();
                 }
             }
-            return new T();
+            return OptimizedInstantiator.Invoke();
         }
 
         public void Return(object obj)
