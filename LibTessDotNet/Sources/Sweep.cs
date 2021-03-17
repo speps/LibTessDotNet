@@ -58,7 +58,7 @@ namespace LibTessDotNet
             public void Reset(IPool pool)
             {
                 _eUp = null;
-                _nodeUp = null;
+                _nodeUp = null; // don't return to pool as Dict takes care of that
                 _windingNumber = 0;
                 _inside = false;
                 _sentinel = false;
@@ -129,7 +129,7 @@ namespace LibTessDotNet
             }
             reg._eUp._activeRegion = null;
             _dict.Remove(reg._nodeUp);
-            _pool.Return(reg);
+            _pool.Return(ref reg);
         }
 
         /// <summary>
@@ -609,7 +609,7 @@ namespace LibTessDotNet
             {
                 // Easy case -- intersection at one of the right endpoints
                 CheckForRightSplice(regUp);
-                _pool.Return(isect);
+                _pool.Return(ref isect);
                 return false;
             }
 
@@ -630,7 +630,7 @@ namespace LibTessDotNet
                     eUp = RegionBelow(regUp)._eUp;
                     FinishLeftRegions(RegionBelow(regUp), regLo);
                     AddRightEdges(regUp, eUp._Oprev, eUp, eUp, true);
-                    _pool.Return(isect);
+                    _pool.Return(ref isect);
                     return true;
                 }
                 if( dstUp == _event ) {
@@ -643,7 +643,7 @@ namespace LibTessDotNet
                     regLo._eUp = eLo._Oprev;
                     eLo = FinishLeftRegions(regLo, null);
                     AddRightEdges(regUp, eLo._Onext, eUp._Rprev, e, true);
-                    _pool.Return(isect);
+                    _pool.Return(ref isect);
                     return true;
                 }
                 // Special case: called from ConnectRightVertex. If either
@@ -664,7 +664,7 @@ namespace LibTessDotNet
                     eLo._Org._t = _event._t;
                 }
                 // leave the rest for ConnectRightVertex
-                _pool.Return(isect);
+                _pool.Return(ref isect);
                 return false;
             }
 
@@ -680,7 +680,7 @@ namespace LibTessDotNet
             _mesh.Splice(_pool, eLo._Oprev, eUp);
             eUp._Org._s = isect._s;
             eUp._Org._t = isect._t;
-            _pool.Return(isect);
+            _pool.Return(ref isect);
             isect = null;
             eUp._Org._pqHandle = _pq.Insert(eUp._Org);
             if (eUp._Org._pqHandle._handle == PQHandle.Invalid)
@@ -933,7 +933,7 @@ namespace LibTessDotNet
             // Get a pointer to the active region containing vEvent
             tmp._eUp = vEvent._anEdge._Sym;
             var regUp = _dict.Find(tmp).Key;
-            _pool.Return(tmp);
+            _pool.Return(ref tmp);
             var regLo = RegionBelow(regUp);
             if (regLo == null)
             {
@@ -1064,7 +1064,14 @@ namespace LibTessDotNet
         /// </summary>
         private void InitEdgeDict()
         {
-            _dict = new Dict<ActiveRegion>(EdgeLeq);
+            if (_dict == null)
+            {
+                _dict = new Dict<ActiveRegion>(_pool, EdgeLeq);
+            }
+            else
+            {
+                _dict.Init();
+            }
 
             AddSentinel(-SentinelCoord, SentinelCoord, -SentinelCoord);
             AddSentinel(-SentinelCoord, SentinelCoord, +SentinelCoord);
@@ -1089,7 +1096,8 @@ namespace LibTessDotNet
                 DeleteRegion(reg);
             }
 
-            _dict = null;
+            Debug.Assert(_dict.Empty);
+            _dict.Reset();
         }
 
         /// <summary>
@@ -1149,8 +1157,11 @@ namespace LibTessDotNet
             }
             // Make sure there is enough space for sentinels.
             vertexCount += 8;
-    
-            _pq = new PriorityQueue<MeshUtils.Vertex>(vertexCount, Geom.VertLeq);
+
+            if (_pq == null)
+            {
+                _pq = new PriorityQueue<MeshUtils.Vertex>(vertexCount, Geom.VertLeq);
+            }
 
             vHead = _mesh._vHead;
             for( v = vHead._next; v != vHead; v = v._next ) {
@@ -1165,7 +1176,7 @@ namespace LibTessDotNet
 
         private void DonePriorityQ()
         {
-            _pq = null;
+            Debug.Assert(_pq.Empty);
         }
 
         /// <summary>

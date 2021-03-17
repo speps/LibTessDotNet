@@ -127,9 +127,7 @@ namespace LibTessDotNet
     {
         private Queue<T> _pool = new Queue<T>();
 
-        private static readonly Func<T> OptimizedInstantiator = Expression.Lambda<Func<T>>(
-                Expression.New(typeof(T))
-            ).Compile();
+        private static readonly Func<T> Creator = Expression.Lambda<Func<T>>(Expression.New(typeof(T))).Compile();
 
         public object Get()
         {
@@ -140,7 +138,7 @@ namespace LibTessDotNet
                     return _pool.Dequeue();
                 }
             }
-            return OptimizedInstantiator.Invoke();
+            return Creator();
         }
 
         public void Return(object obj)
@@ -165,14 +163,16 @@ namespace LibTessDotNet
     {
         public IPool()
         {
+            Register<Mesh>(new DefaultTypePool<Mesh>());
             Register<MeshUtils.Vertex>(new DefaultTypePool<MeshUtils.Vertex>());
             Register<MeshUtils.Face>(new DefaultTypePool<MeshUtils.Face>());
             Register<MeshUtils.Edge>(new DefaultTypePool<MeshUtils.Edge>());
             Register<Tess.ActiveRegion>(new DefaultTypePool<Tess.ActiveRegion>());
+            Register<Dict<Tess.ActiveRegion>.Node>(new DefaultTypePool<Dict<Tess.ActiveRegion>.Node>());
         }
         public abstract void Register<T>(ITypePool typePool) where T : class, Pooled<T>, new();
         public abstract T Get<T>() where T : class, Pooled<T>, new();
-        public abstract void Return<T>(T obj) where T : class, Pooled<T>, new();
+        public abstract void Return<T>(ref T obj) where T : class, Pooled<T>, new();
     }
 
     public class NullPool : IPool
@@ -188,8 +188,9 @@ namespace LibTessDotNet
         {
         }
 
-        public override void Return<T>(T obj)
+        public override void Return<T>(ref T obj)
         {
+            obj = null;
         }
     }
 
@@ -217,13 +218,13 @@ namespace LibTessDotNet
             }
             if (obj == null)
             {
-                obj = new T();
+                throw new InvalidOperationException("Type not registered with type tool");
             }
             obj.Init(this);
             return obj;
         }
 
-        public override void Return<T>(T obj)
+        public override void Return<T>(ref T obj)
         {
             if (obj == null)
             {
@@ -235,6 +236,7 @@ namespace LibTessDotNet
             {
                 typePool.Return(obj);
             }
+            obj = null;
         }
     }
 
@@ -514,8 +516,8 @@ namespace LibTessDotNet
             eNext._Sym._next = ePrev;
             ePrev._Sym._next = eNext;
 
-            pool.Return(eDel._Sym);
-            pool.Return(eDel);
+            pool.Return(ref eDel._Sym);
+            pool.Return(ref eDel);
         }
 
         /// <summary>
@@ -539,7 +541,7 @@ namespace LibTessDotNet
             vNext._prev = vPrev;
             vPrev._next = vNext;
 
-            pool.Return(vDel);
+            pool.Return(ref vDel);
         }
 
         /// <summary>
@@ -563,7 +565,7 @@ namespace LibTessDotNet
             fNext._prev = fPrev;
             fPrev._next = fNext;
 
-            pool.Return(fDel);
+            pool.Return(ref fDel);
         }
 
         /// <summary>

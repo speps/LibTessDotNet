@@ -199,15 +199,16 @@ namespace LibTessDotNet
         }
         public Tess(IPool pool)
         {
+            if (pool == null)
+            {
+                throw new ArgumentNullException("pool");
+            }
+
             _normal = Vec3.Zero;
             _bminX = _bminY = _bmaxX = _bmaxY = 0;
 
             _windingRule = WindingRule.EvenOdd;
             _pool = pool;
-            if (_pool == null)
-            {
-                _pool = new NullPool();
-            }
             _mesh = null;
 
             _vertices = null;
@@ -845,8 +846,7 @@ namespace LibTessDotNet
                 OutputPolymesh(elementType, polySize);
             }
 
-            _pool.Return(_mesh);
-            _mesh = null;
+            _pool.Return(ref _mesh);
         }
     }
 }

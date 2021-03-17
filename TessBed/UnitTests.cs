@@ -53,7 +53,7 @@ namespace TessBed
             {
             }
 
-            public override void Return<T>(T obj)
+            public override void Return<T>(ref T obj)
             {
                 if (obj == null)
                 {
@@ -69,6 +69,7 @@ namespace TessBed
                 {
                     throw new InvalidOperationException();
                 }
+                obj = null;
             }
 
             public void AssertCounts()

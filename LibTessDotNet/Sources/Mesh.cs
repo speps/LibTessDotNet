@@ -87,18 +87,18 @@ namespace LibTessDotNet
             for (MeshUtils.Face f = _fHead, fNext = _fHead; f._next != null; f = fNext)
             {
                 fNext = f._next;
-                pool.Return(f);
+                pool.Return(ref f);
             }
             for (MeshUtils.Vertex v = _vHead, vNext = _vHead; v._next != null; v = vNext)
             {
                 vNext = v._next;
-                pool.Return(v);
+                pool.Return(ref v);
             }
             for (MeshUtils.Edge e = _eHead, eNext = _eHead; e._next != null; e = eNext)
             {
                 eNext = e._next;
-                pool.Return(e._Sym);
-                pool.Return(e);
+                pool.Return(ref e._Sym);
+                pool.Return(ref e);
             }
             
             _vHead = null;
@@ -389,7 +389,7 @@ namespace LibTessDotNet
             fNext._prev = fPrev;
             fPrev._next = fNext;
 
-            pool.Return(fZap);
+            pool.Return(ref fZap);
         }
 
         public void MergeConvexFaces(IPool pool, int maxVertsPerFace)

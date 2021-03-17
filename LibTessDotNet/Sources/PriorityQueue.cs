@@ -65,7 +65,7 @@ namespace LibTessDotNet
             _initialized = false;
         }
 
-        class StackItem
+        struct StackItem
         {
             internal int p, r;
         };

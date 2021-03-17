@@ -50,7 +50,7 @@ namespace LibTessDotNet
     {
         public delegate bool LessOrEqual(TValue lhs, TValue rhs);
 
-        protected class HandleElem
+        internal class HandleElem
         {
             internal TValue _key;
             internal int _node;
@@ -78,7 +78,7 @@ namespace LibTessDotNet
             _initialized = false;
 
             _nodes[1] = 1;
-            _handles[1] = new HandleElem { _key = null };
+            _handles[1] = new HandleElem();
         }
 
         private void FloatDown(int curr)
