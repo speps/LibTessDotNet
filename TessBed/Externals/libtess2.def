@@ -1,0 +1,12 @@
+LIBRARY LIBTESS2
+EXPORTS
+	tessNewTess				@1
+	tessDeleteTess			@2
+	tessAddContour			@3
+	tessSetOption			@4
+	tessTesselate			@5
+	tessGetVertexCount		@6
+	tessGetVertices			@7
+	tessGetVertexIndices	@8
+	tessGetElementCount		@9
+	tessGetElements			@10

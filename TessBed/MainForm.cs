@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using LibTessDotNet;
 using System.Drawing;
 using System.IO;
+using System.Collections.Generic;
 
 namespace TessBed
 {
@@ -12,7 +13,7 @@ namespace TessBed
         DataLoader _data = new DataLoader();
         string[] _windingRules;
         WindingRule _windingRule;
-        int _polySize;
+        int _polySize = 3;
 
         Canvas _canvas;
         PolygonSet _polys;
@@ -106,8 +107,10 @@ namespace TessBed
                 var dialog = new FolderBrowserDialog();
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    var files = Directory.GetFiles(dialog.SelectedPath, "*.dat");
-                    if (files.Length > 0)
+                    var files = new List<string>();
+                    files.AddRange(Directory.GetFiles(dialog.SelectedPath, "*.dat"));
+                    files.AddRange(Directory.GetFiles(dialog.SelectedPath, "*.txt"));
+                    if (files.Count > 0)
                     {
                         toolStripAssets.Items.Clear();
                         _polys = null;
@@ -219,18 +222,6 @@ namespace TessBed
             return result;
         }
 
-        private object VertexCombine(Vec3 position, object[] data, float[] weights)
-        {
-            var colors = new Color[] { (Color)data[0], (Color)data[1], (Color)data[2], (Color)data[3] };
-            var rgba = new float[] {
-                (float)colors[0].R * weights[0] + (float)colors[1].R * weights[1] + (float)colors[2].R * weights[2] + (float)colors[3].R * weights[3],
-                (float)colors[0].G * weights[0] + (float)colors[1].G * weights[1] + (float)colors[2].G * weights[2] + (float)colors[3].G * weights[3],
-                (float)colors[0].B * weights[0] + (float)colors[1].B * weights[1] + (float)colors[2].B * weights[2] + (float)colors[3].B * weights[3],
-                (float)colors[0].A * weights[0] + (float)colors[1].A * weights[1] + (float)colors[2].A * weights[2] + (float)colors[3].A * weights[3]
-            };
-            return Color.FromArgb((int)rgba[3], (int)rgba[0], (int)rgba[1], (int)rgba[2]);
-        }
-
         private void RefreshCanvas()
         {
             if (_polys == null)
@@ -242,43 +233,9 @@ namespace TessBed
             }
 
             _sw.Reset();
-
-            foreach (var poly in _polys)
-            {
-                var v = new ContourVertex[poly.Count];
-                for (int i = 0; i < poly.Count; i++)
-                {
-                    v[i].Position = new Vec3(poly[i].X, poly[i].Y, poly[i].Z);
-                    v[i].Data = poly[i].Color;
-                }
-                _sw.Start();
-                _tess.AddContour(v, poly.Orientation);
-                _sw.Stop();
-            }
-
             _sw.Start();
-            _tess.Tessellate(_windingRule, ElementType.Polygons, _polySize, VertexCombine);
+            var output = PolyConvert.Triangulate(PolyConvert.Library.Tess, _polys, _polySize, _windingRule);
             _sw.Stop();
-
-            var output = new PolygonSet();
-            for (int i = 0; i < _tess.ElementCount; i++)
-            {
-                var poly = new Polygon();
-                for (int j = 0; j < _polySize; j++)
-                {
-                    int index = _tess.Elements[i * _polySize + j];
-                    if (index == -1)
-                        continue;
-                    var proj = Project(_tess.Vertices[index].Position);
-                    var v = new PolygonPoint {
-                        X = proj.X,
-                        Y = proj.Y,
-                        Color = (Color)_tess.Vertices[index].Data
-                    };
-                    poly.Add(v);
-                }
-                output.Add(poly);
-            }
 
             var input = new PolygonSet();
             foreach (var poly in _polys)
@@ -286,10 +243,9 @@ namespace TessBed
                 var projPoly = new Polygon();
                 for (int i = 0; i < poly.Count; i++)
                 {
-                    var proj = Project(new Vec3(poly[i].X, poly[i].Y, poly[i].Z));
                     var v = new PolygonPoint {
-                        X = proj.X,
-                        Y = proj.Y,
+                        X = poly[i].X,
+                        Y = poly[i].Y,
                         Color = poly[i].Color
                     };
                     projPoly.Add(v);

@@ -1,0 +1,3 @@
+[submodule "TessBed/Externals/libtess2"]
+	path = TessBed/Externals/libtess2
+	url = https://github.com/speps/libtess2

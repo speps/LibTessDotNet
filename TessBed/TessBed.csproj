@@ -34,6 +34,16 @@
   <PropertyGroup>
     <StartupObject />
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>true</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <Prefer32Bit>true</Prefer32Bit>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="nunit.framework">
       <HintPath>Externals\NUnit\nunit.framework.dll</HintPath>
@@ -58,6 +68,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="DataLoader.cs" />
+    <Compile Include="Externals\LibTess2.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -138,7 +149,7 @@
     <EmbeddedResource Include="TestData\test.testdat" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="System.Resources.Extensions" Version="4.7.0" />
+    <PackageReference Include="System.Resources.Extensions" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
@@ -147,5 +158,6 @@
     <ProjectReference Include="..\LibTessDotNet\LibTessDotNet.csproj">
       <Name>LibTessDotNet</Name>
     </ProjectReference>
+    <ProjectReference Include="Externals\libtess2.vcxproj" />
   </ItemGroup>
 </Project>
