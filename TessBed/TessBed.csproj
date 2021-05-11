@@ -158,6 +158,5 @@
     <ProjectReference Include="..\LibTessDotNet\LibTessDotNet.csproj">
       <Name>LibTessDotNet</Name>
     </ProjectReference>
-    <ProjectReference Include="Externals\libtess2.vcxproj" />
   </ItemGroup>
 </Project>
