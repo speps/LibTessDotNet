@@ -115,7 +115,7 @@ namespace TessBed
             SetShowInput(true);
             SetShowWinding(false);
             SetPolySize(3);
-            SetWindingRule(WindingRule.Positive);
+            SetWindingRule(WindingRule.EvenOdd);
         }
 
         public void LoadFolder(string path)
