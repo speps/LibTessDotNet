@@ -107,28 +107,7 @@ namespace TessBed
                 var dialog = new FolderBrowserDialog();
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    var files = new List<string>();
-                    files.AddRange(Directory.GetFiles(dialog.SelectedPath, "*.dat"));
-                    files.AddRange(Directory.GetFiles(dialog.SelectedPath, "*.txt"));
-                    if (files.Count > 0)
-                    {
-                        toolStripAssets.Items.Clear();
-                        _polys = null;
-                        foreach (var file in files)
-                        {
-                            using (var stream = new FileStream(file, FileMode.Open))
-                            {
-                                var polygons = DataLoader.LoadDat(stream);
-                                if (_polys == null)
-                                {
-                                    _polys = polygons;
-                                }
-                                toolStripAssets.Items.Add(new DataLoader.Asset() { Name = Path.GetFileName(file), Polygons = polygons });
-                            }
-                        }
-                        toolStripAssets.SelectedIndex = 0;
-                        RefreshCanvas();
-                    }
+                    LoadFolder(dialog.SelectedPath);
                 }
             };
 
@@ -136,7 +115,33 @@ namespace TessBed
             SetShowInput(true);
             SetShowWinding(false);
             SetPolySize(3);
-            SetWindingRule(WindingRule.EvenOdd);
+            SetWindingRule(WindingRule.Positive);
+        }
+
+        public void LoadFolder(string path)
+        {
+            var files = new List<string>();
+            files.AddRange(Directory.GetFiles(path, "*.dat"));
+            files.AddRange(Directory.GetFiles(path, "*.txt"));
+            if (files.Count > 0)
+            {
+                toolStripAssets.Items.Clear();
+                _polys = null;
+                foreach (var file in files)
+                {
+                    using (var stream = new FileStream(file, FileMode.Open))
+                    {
+                        var polygons = DataLoader.LoadDat(stream);
+                        if (_polys == null)
+                        {
+                            _polys = polygons;
+                        }
+                        toolStripAssets.Items.Add(new DataLoader.Asset() { Name = Path.GetFileName(file), Polygons = polygons });
+                    }
+                }
+                toolStripAssets.SelectedIndex = 0;
+                RefreshCanvas();
+            }
         }
 
         private void SetAsset(string name)

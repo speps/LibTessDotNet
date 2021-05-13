@@ -3,6 +3,7 @@ using System.Windows.Forms;
 using System.Collections.Generic;
 using LibTessDotNet;
 using System.Diagnostics;
+using System.IO;
 
 namespace TessBed
 {
@@ -14,11 +15,21 @@ namespace TessBed
         [STAThread]
         static void Main(string[] args)
         {
+            string folder = null;
             if (args.Length >= 1)
             {
                 if (string.Equals(args[0], "gentestdat", StringComparison.OrdinalIgnoreCase))
                 {
                     UnitTests.GenerateTestData();
+                    return;
+                }
+                if (args.Length == 2 && string.Equals(args[0], "folder", StringComparison.OrdinalIgnoreCase))
+                {
+                    folder = args[1];
+                    if (!Directory.Exists(folder))
+                    {
+                        folder = null;
+                    }
                 }
                 if (args.Length == 2 && string.Equals(args[0], "profile", StringComparison.OrdinalIgnoreCase))
                 {
@@ -46,12 +57,17 @@ namespace TessBed
                         }
                     }
                     Console.WriteLine("{0:F3}ms", stopwatch.Elapsed.TotalMilliseconds);
+                    return;
                 }
-                return;
             }
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+            var form = new MainForm();
+            if (folder != null)
+            {
+                form.LoadFolder(folder);
+            }
+            Application.Run(form);
         }
     }
 }

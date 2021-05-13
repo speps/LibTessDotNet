@@ -32,6 +32,8 @@
 *.nupkg
 *.snupkg
 TestResult.xml
+launchSettings.json
+*.recipe
 
 bin/
 obj/
