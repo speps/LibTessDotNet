@@ -127,8 +127,6 @@ namespace LibTessDotNet
     {
         private Queue<T> _pool = new Queue<T>();
 
-        private static readonly Func<T> Creator = Expression.Lambda<Func<T>>(Expression.New(typeof(T))).Compile();
-
         public object Get()
         {
             lock (_pool)
@@ -138,7 +136,7 @@ namespace LibTessDotNet
                     return _pool.Dequeue();
                 }
             }
-            return Creator();
+            return new T();
         }
 
         public void Return(object obj)
